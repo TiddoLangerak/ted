@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { sendMessage, messageTypes } from './protocol';
 
 export default {
 	open(client, { file }) {
@@ -7,7 +8,7 @@ export default {
 			if (err) {
 				console.error(`Could not open file ${file}`);
 			} else {
-				client.write(JSON.stringify({ file, content }) + '\n');
+				sendMessage(client, { type : messageTypes.EVENT, file, content });
 			}
 		});
 		//TODO: move out of this file

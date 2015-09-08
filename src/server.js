@@ -2,6 +2,7 @@ import 'babel/polyfill';
 import net from 'net';
 import { getSocketPath } from './socketManager';
 import rpc from './rpc';
+import { messageParser, messageTypes, sendMessage } from './protocol';
 
 const clients = new Set();
 
@@ -14,22 +15,15 @@ const server = net.createServer((client) => {
 	});
 
 	let dataBuffer = '';
-
-	client.on('data', (data) => {
-		dataBuffer += data;
-		const commands = dataBuffer.split('\n');
-		dataBuffer = commands.pop();
-		commands.forEach((command) => {
-			try {
-				const rpcCall = JSON.parse(command);
-				rpc[rpcCall.action](client, rpcCall.arguments);
-			} catch(e) {
-				//TODO: error handling
-				console.error(`Could not execute command: ${e}. Command: ${command}`);
-			}
-
-		});
-	});
+	client.on('data', messageParser((message) => {
+		switch (message.type) {
+			case messageTypes.RPC:
+				rpc[message.action](client, message.arguments);
+				break;
+			default:
+				console.error(`Unkown message type: ${message.type}`);
+		}
+	}));
 });
 
 const socketPath = getSocketPath();

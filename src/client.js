@@ -2,35 +2,28 @@ import blessed from 'blessed';
 import net from 'net';
 import { getSocketPath } from './socketManager';
 import path from 'path';
-
-function sendCommand(client, command) {
-	client.write(JSON.stringify(command) + '\n');
-}
+import { messageParser, sendMessage, messageTypes } from './protocol.js';
 
 const socketPath = getSocketPath();
 const client = net.connect({ path : socketPath}, () => {
 	console.log('Connected to server');
 	if (process.argv[2]) {
 		const file = path.resolve(process.cwd(), process.argv[2]);
-		sendCommand(client, { action : 'open', arguments : { file } });
+		sendMessage(client, { type : messageTypes.RPC, action : 'open', arguments : { file } });
 	}
 });
 
 //TODO: share this with server.js
-let dataBuffer = '';
-client.on('data', (data) => {
-	dataBuffer += data;
-	const events = dataBuffer.split('\n');
-	dataBuffer = events.pop();
-	events.forEach((eventString) => {
-		const event = JSON.parse(eventString);
-		if (event.content) {
-			box.content = event.content;
+client.on('data', messageParser((message) => {
+	switch(message.type) {
+		case messageTypes.EVENT:
+			box.content = message.content;
 			screen.render();
-		}
-	});
-});
-
+			break;
+		default:
+			console.error(`Unkown message type: ${message.type}`);
+	}
+}));
 
 client.on('end', () => {
 	console.log('Disconnected');
