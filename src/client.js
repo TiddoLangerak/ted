@@ -17,7 +17,7 @@ const client = net.connect({ path : socketPath}, () => {
 client.on('data', messageParser((message) => {
 	switch(message.type) {
 		case messageTypes.EVENT:
-			box.content = message.content;
+			textArea.content = message.content;
 			screen.render();
 			break;
 		default:
@@ -29,11 +29,10 @@ client.on('end', () => {
 	console.log('Disconnected');
 });
 
-const screen = blessed.screen({});
-screen.key(['escape'], (ch, key) => {
-	screen.destroy();
+const screen = blessed.screen({
+	terminal: 'xterm-256color',
 });
-const box = blessed.box({
+const textArea = blessed.text({
   top: 0,
   left: 0,
   width: '100%',
@@ -41,7 +40,44 @@ const box = blessed.box({
   content: '',
   tags: true,
 });
-screen.append(box);
+
+const cursor = blessed.box({
+	top: 0,
+	left: 0,
+	width: 1,
+	height : 1,
+	style : {
+		bg : '#ffffff',
+		fg : '#ffffff',
+		transparent : true
+	},
+});
+
+screen.key(['escape', 'q'], (ch, key) => {
+	screen.destroy();
+});
+
+screen.key(['j'], () => {
+	cursor.top++;
+	screen.render();
+});
+screen.key(['k'], () => {
+	cursor.top--;
+	screen.render();
+});
+screen.key(['h'], () => {
+	cursor.left--;
+	screen.render();
+});
+screen.key(['l'], () => {
+	cursor.left++;
+	screen.render();
+});
+
+screen.append(textArea);
+screen.append(cursor);
 screen.render();
+
+
 
 
