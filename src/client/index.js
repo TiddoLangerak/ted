@@ -58,20 +58,29 @@ screen.key(['escape', 'q'], () => {
 	client.end();
 });
 
+function placeCursorWithinBounds(cursor, screen) {
+	cursor.top = Math.min(Math.max(cursor.top, 0), screen.height - 1);
+	cursor.left = Math.min(Math.max(cursor.left, 0), screen.width - 1);
+}
+
 screen.key(['j'], () => {
 	cursor.top++;
+	placeCursorWithinBounds(cursor, screen);
 	screen.render();
 });
 screen.key(['k'], () => {
 	cursor.top--;
+	placeCursorWithinBounds(cursor, screen);
 	screen.render();
 });
 screen.key(['h'], () => {
 	cursor.left--;
+	placeCursorWithinBounds(cursor, screen);
 	screen.render();
 });
 screen.key(['l'], () => {
 	cursor.left++;
+	placeCursorWithinBounds(cursor, screen);
 	screen.render();
 });
 
