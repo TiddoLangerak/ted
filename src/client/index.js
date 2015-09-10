@@ -1,23 +1,23 @@
 import blessed from 'blessed';
 import net from 'net';
-import { getSocketPath } from './socketManager';
+import { getSocketPath } from '../socketManager';
 import path from 'path';
-import { messageParser, sendMessage, messageTypes } from './protocol.js';
+import { messageParser, sendMessage, messageTypes } from '../protocol.js';
 
 const socketPath = getSocketPath();
 const client = net.connect({ path : socketPath}, () => {
 	console.log('Connected to server');
 	if (process.argv[2]) {
 		const file = path.resolve(process.cwd(), process.argv[2]);
-		sendMessage(client, { type : messageTypes.RPC, action : 'open', arguments : { file } });
+		sendMessage(client, { type : messageTypes.RPC, action : 'requestFile', arguments : { file } });
 	}
 });
 
 //TODO: share this with server.js
 client.on('data', messageParser((message) => {
 	switch(message.type) {
-		case messageTypes.EVENT:
-			textArea.content = message.content;
+		case messageTypes.BUFFER:
+			textArea.content = message.buffer.content;
 			screen.render();
 			break;
 		default:
@@ -30,7 +30,7 @@ client.on('end', () => {
 });
 
 const screen = blessed.screen({
-	terminal: 'xterm-256color',
+	terminal: 'xterm-256color'
 });
 const textArea = blessed.text({
   top: 0,
@@ -38,7 +38,7 @@ const textArea = blessed.text({
   width: '100%',
   height: '100%',
   content: '',
-  tags: true,
+  tags: true
 });
 
 const cursor = blessed.box({
@@ -50,11 +50,12 @@ const cursor = blessed.box({
 		bg : '#ffffff',
 		fg : '#ffffff',
 		transparent : true
-	},
+	}
 });
 
-screen.key(['escape', 'q'], (ch, key) => {
+screen.key(['escape', 'q'], () => {
 	screen.destroy();
+	client.end();
 });
 
 screen.key(['j'], () => {

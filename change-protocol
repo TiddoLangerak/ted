@@ -1,0 +1,9 @@
+Changes are done like this:
+
+- User inputs *high-level* commands to make some changes (e.g. "change inner word").
+- Client translates these commands to *low-level* operations on text (e.g. delete column 3-10 at line 2, or delete character 20-24)
+- Client sends the *low-level* operation to the server
+- Server processes the *low-level* operation on it's buffer and broadcasts the *low-level* change to the clients
+- Clients process the *low-level* operation on it's internal representation of the buffer
+
+For the initial state clients may *not* process operations to the visual buffer before they got a response from the server to prevent race conditions. This will have to be thought out properly first
