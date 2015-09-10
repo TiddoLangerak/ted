@@ -26,16 +26,16 @@ export function error(...msgs) {
 }
 
 export function clearLog() {
-  logMessage = '';
-  draw();
+	logMessage = '';
+	draw();
 }
 
 registerDrawable(() => {
-  if (logMessage) {
-    logMessage = '---LOG---\n' + logMessage;
-    const logLines = logMessage.split('\n');
-    console.log(escapes.cursorTo(0, process.stdout.rows - logLines.length));
-    logLines.forEach((line) => console.log(line));
-  }
-}, drawPriorities);
+	if (logMessage) {
+		const logLines = logMessage.split('\n');
+		process.stdout.write(escapes.cursorTo(0, process.stdout.rows - logLines.length - 1));
+		process.stdout.write(escapes.eraseDown);
+		process.stdout.write('---LOG---\n' + logMessage);
+	}
+}, drawPriorities.LOG);
 
