@@ -8,6 +8,7 @@ export function registerDrawable(drawFunction, priority = 0) {
 }
 
 export function clear() {
+  console.log(escapes.cursorHide);
 	console.log(escapes.cursorTo(0, 0));
 	console.log(escapes.eraseDown);
 }
@@ -17,6 +18,10 @@ export function draw() {
   drawables.forEach((drawable) => drawable.draw());
 }
 
-export const priorities = {
+export const drawPriorities = {
   LOG : 1000
 };
+
+process.on('exit', () => {
+  console.log(escapes.cursorShow);
+});

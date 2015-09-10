@@ -1,4 +1,4 @@
-import { registerDrawable, draw } from './screen';
+import { registerDrawable, draw, drawPriorities } from './screen';
 import util from 'util';
 import styles from 'ansi-styles';
 import escapes from 'ansi-escapes';
@@ -31,8 +31,11 @@ export function clearLog() {
 }
 
 registerDrawable(() => {
-	const logLines = logMessage.split('\n');
-	console.log(escapes.cursorTo(0, process.stdout.rows - logLines.length));
-	logLines.forEach((line) => console.log(line));
-});
+  if (logMessage) {
+    logMessage = '---LOG---\n' + logMessage;
+    const logLines = logMessage.split('\n');
+    console.log(escapes.cursorTo(0, process.stdout.rows - logLines.length));
+    logLines.forEach((line) => console.log(line));
+  }
+}, drawPriorities);
 
