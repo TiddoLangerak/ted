@@ -35,15 +35,17 @@ export default function (content = '') {
 	};
 	window.updateCursor = (updateFunc) => {
 		updateFunc(window.cursor);
-		window.cursor.y = Math.max(0, window.cursor.y);
+		//Note: both for y and x the min call must be done before the max call, since
+		//it is possible that a negative number comes out of the Math.min call (when rows or cols = 0)
 		window.cursor.y = Math.min(process.stdout.rows - 1,
 		                    lines.length - 1,
 		                    window.cursor.y);
+		window.cursor.y = Math.max(0, window.cursor.y);
 
-		window.cursor.x = Math.max(0, window.cursor.x);
 		window.cursor.x = Math.min(process.stdout.columns - 1,
 		                    window.lineLength(window.cursor.y) - 1,
 		                    window.cursor.x);
+		window.cursor.x = Math.max(0, window.cursor.x);
 		draw();
 	};
 
