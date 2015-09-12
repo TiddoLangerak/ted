@@ -2,10 +2,12 @@ import net from 'net';
 import { getSocketPath } from '../socketManager';
 import path from 'path';
 import { messageParser, sendMessage, messageTypes } from '../protocol.js';
-import { draw, registerDrawable, drawPriorities } from './screen';
+import screen, { drawPriorities } from './screen';
 import { error, log } from './screenLogger';
 import * as keyboardProcessor from './keyboardProcessor';
 import { fillLine } from './screenBufferUtils';
+
+const { registerDrawable, draw } = screen();
 
 const socketPath = getSocketPath();
 const client = net.connect({ path : socketPath}, () => {
@@ -17,6 +19,7 @@ const client = net.connect({ path : socketPath}, () => {
 });
 
 let content = '';
+
 
 registerDrawable((buffer) => {
 	const lines = content.split('\n');
