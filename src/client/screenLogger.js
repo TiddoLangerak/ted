@@ -1,41 +1,43 @@
 import { registerDrawable, draw, drawPriorities } from './screen';
+import { fillLine } from './screenBufferUtils';
 import util from 'util';
 import styles from 'ansi-styles';
-import escapes from 'ansi-escapes';
 
-let logMessage = '';
+const logs = [];
+
+function storeLog(msg, type) {
+	if (typeof msg !== 'string') {
+		msg = util.inspect(msg);
+	}
+	logs.push({ msg, type });
+}
 
 export function log(...msgs) {
-	msgs.forEach((msg) => {
-		if (logMessage) {
-			logMessage += '\n';
-		}
-		if (typeof msg === 'string') {
-			logMessage += msg;
-		} else {
-			logMessage += util.inspect(msg);
-		}
-	});
+	msgs.forEach(msg => storeLog(msg, 'log'));
 	draw();
 }
 
 export function error(...msgs) {
-	msgs.forEach((msg) => {
-		log(styles.red + msg + styles.reset);
-	});
+	msgs.forEach(msg => storeLog(msg, 'error'));
 }
 
 export function clearLog() {
-	logMessage = '';
+	logs.splice(0, logs.length);
 	draw();
 }
 
-registerDrawable(() => {
-	if (logMessage) {
-		const logLines = logMessage.split('\n');
-		process.stdout.write(escapes.cursorTo(0, process.stdout.rows - logLines.length - 1));
-		process.stdout.write(escapes.eraseDown);
-		process.stdout.write('---LOG---\n' + logMessage);
+const modifiers = {
+	log : new Set(),
+	error : new Set([styles.red])
+};
+
+registerDrawable((buffer) => {
+	if (logs.length) {
+		const start = buffer.length - logs.length - 1; //-1 because of the heading
+		fillLine(buffer[start], '---LOG---');
+		logs.forEach((log, idx) => {
+			fillLine(buffer[start + 1 + idx], log.msg, modifiers[log.type]);
+		});
 	}
 }, drawPriorities.LOG);
 

@@ -5,8 +5,7 @@ import { messageParser, sendMessage, messageTypes } from '../protocol.js';
 import { draw, registerDrawable, drawPriorities } from './screen';
 import { error, log } from './screenLogger';
 import * as keyboardProcessor from './keyboardProcessor';
-import escapes from 'ansi-escapes';
-
+import { fillLine } from './screenBufferUtils';
 
 const socketPath = getSocketPath();
 const client = net.connect({ path : socketPath}, () => {
@@ -19,11 +18,9 @@ const client = net.connect({ path : socketPath}, () => {
 
 let content = '';
 
-registerDrawable(() => {
-	process.stdout.write(escapes.cursorTo(0, 0));
+registerDrawable((buffer) => {
 	const lines = content.split('\n');
-	const linesToDraw = lines.slice(0, process.stdout.rows);
-	process.stdout.write(linesToDraw.join('\n'));
+	lines.slice(0, buffer.length).forEach((line, idx) => fillLine(buffer[idx], line));
 }, drawPriorities.CONTENT);
 
 //TODO: share this with server.js
