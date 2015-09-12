@@ -4,7 +4,6 @@ function drawBuffer(buffer) {
 	//TODO: incremental drawing instead of refreshing the entire buffer
 	const tokens = [];
 	let modifiers = new Set();
-
 	buffer.forEach(row => {
 		row.forEach(cel => {
 			modifiers.forEach(currentMod => {
@@ -23,6 +22,7 @@ function drawBuffer(buffer) {
 		tokens.push('\n');
 	});
 	tokens.pop(); //trailing newline
+	modifiers.forEach(mod => tokens.push(mod.close));
 	process.stdout.write(tokens.join(''));
 }
 

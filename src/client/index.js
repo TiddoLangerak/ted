@@ -2,12 +2,12 @@ import net from 'net';
 import { getSocketPath } from '../socketManager';
 import path from 'path';
 import { messageParser, sendMessage, messageTypes } from '../protocol.js';
-import screen, { drawPriorities } from './screen';
-import { error, log } from './screenLogger';
-import * as keyboardProcessor from './keyboardProcessor';
-import { fillLine } from './screenBufferUtils';
+import screen from './screen';
+import { error, log, clearLog } from './screenLogger';
+import keyboardProcessor, { ctrl } from './keyboardProcessor';
+import window from './window';
 
-const { registerDrawable, draw } = screen();
+const { draw } = screen();
 
 const socketPath = getSocketPath();
 const client = net.connect({ path : socketPath}, () => {
@@ -18,19 +18,14 @@ const client = net.connect({ path : socketPath}, () => {
 	}
 });
 
-let content = '';
-
-
-registerDrawable((buffer) => {
-	const lines = content.split('\n');
-	lines.slice(0, buffer.length).forEach((line, idx) => fillLine(buffer[idx], line));
-}, drawPriorities.CONTENT);
+const mainWindow = window('');
 
 //TODO: share this with server.js
 client.on('data', messageParser((message) => {
 	switch(message.type) {
 		case messageTypes.BUFFER:
-			content = message.buffer.content;
+			log("new content");
+			mainWindow.content = message.buffer.content;
 			draw();
 			break;
 		default:
@@ -43,6 +38,29 @@ client.on('end', () => {
 });
 
 
-keyboardProcessor.start();
+const modes = {
+	normal : {
+		[ctrl('c')] : () => {
+			process.exit();
+		},
+		'\r' : () => {
+			clearLog();
+		},
+		'h' : () => {
+			mainWindow.updateCursor((cursor) => cursor.x--);
+		},
+		'l' : () => {
+			mainWindow.updateCursor((cursor) => cursor.x++);
+		},
+		'j' : () => {
+			mainWindow.updateCursor((cursor) => cursor.y++);
+		},
+		'k' : () => {
+			mainWindow.updateCursor((cursor) => cursor.y--);
+		}
+	}
+};
+
+keyboardProcessor(modes.normal);
 
 draw();
