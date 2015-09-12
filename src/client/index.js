@@ -2,12 +2,14 @@ import net from 'net';
 import { getSocketPath } from '../socketManager';
 import path from 'path';
 import { messageParser, sendMessage, messageTypes } from '../protocol.js';
-import screen from './screen';
+import screen, { drawPriorities } from './screen';
 import { error, log, clearLog } from './screenLogger';
-import keyboardProcessor, { ctrl } from './keyboardProcessor';
+import keyboardProcessor, { ctrl, keys } from './keyboardProcessor';
 import window from './window';
+import util from 'util';
+import { fillLine } from './screenBufferUtils';
 
-const { draw } = screen();
+const { registerDrawable, draw } = screen();
 
 const socketPath = getSocketPath();
 const client = net.connect({ path : socketPath}, () => {
@@ -24,7 +26,6 @@ const mainWindow = window('');
 client.on('data', messageParser((message) => {
 	switch(message.type) {
 		case messageTypes.BUFFER:
-			log("new content");
 			mainWindow.content = message.buffer.content;
 			draw();
 			break;
@@ -37,6 +38,12 @@ client.on('end', () => {
 	log('Disconnected');
 });
 
+
+let currentMode = 'normal';
+
+registerDrawable(buffer => {
+	fillLine(buffer[buffer.length - 1], currentMode.toUpperCase());
+}, drawPriorities.STATUS_LINE);
 
 const modes = {
 	normal : {
@@ -57,6 +64,21 @@ const modes = {
 		},
 		'k' : () => {
 			mainWindow.updateCursor((cursor) => cursor.y--);
+		},
+		'i' : () => {
+			currentMode = 'insert';
+			draw();
+			return modes.insert;
+		},
+		default : (ch, key) => {
+			log(util.inspect(ch), key);
+		}
+	},
+	insert : {
+		[keys.ESCAPE] : () => {
+			currentMode = 'normal';
+			draw();
+			return modes.normal;
 		}
 	}
 };

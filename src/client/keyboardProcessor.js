@@ -29,6 +29,10 @@ function keyProcessor(bindings) {
 	};
 }
 
+export const keys = {
+	ESCAPE : '\u001b'
+};
+
 
 /**
  * Starts the keyboard processing.

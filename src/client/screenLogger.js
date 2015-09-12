@@ -35,7 +35,7 @@ const modifiers = {
 
 registerDrawable((buffer) => {
 	if (logs.length) {
-		const start = buffer.length - logs.length - 1; //-1 because of the heading
+		const start = buffer.length - logs.length - 2; //-1 because of the heading, and another -1 because of statusline
 		fillLine(buffer[start], '---LOG---');
 		logs.forEach((log, idx) => {
 			fillLine(buffer[start + 1 + idx], log.msg, modifiers[log.type]);
