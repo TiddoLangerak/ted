@@ -19,7 +19,15 @@ export default function createStatusLine({ modes, window }) {
 		const fileNameSpace = buffer[buffer.length - 2].length - statusLine.length;
 		const fileName = window.file || '';
 		const visibleFileName = fileName.substr(-fileNameSpace);
-		const fileNameSegment = fixedLength(visibleFileName, fileNameSpace, statusLineOpts);
+
+		const fileNameOpts = {
+			modifiers : new Set(statusLineOpts.modifiers),
+			fillerModifiers : statusLineOpts.fillerModifiers
+		};
+		if (window.isDirty) {
+			fileNameOpts.modifiers.add(styles.red);
+		}
+		const fileNameSegment = fixedLength(visibleFileName, fileNameSpace, fileNameOpts);
 		buffer[buffer.length - 2] = [...statusLine, ...fileNameSegment];
 	}, drawPriorities.STATUS_LINE);
 }

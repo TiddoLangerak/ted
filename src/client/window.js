@@ -32,6 +32,7 @@ export default function (content = '') {
 			return lines[line].length;
 		}
 	};
+	window.isDirty = false;
 	window.updateCursor = (updateFunc) => {
 		updateFunc(window.cursor);
 		//Note: both for y and x the min call must be done before the max call, since

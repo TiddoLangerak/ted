@@ -19,17 +19,21 @@ async function checkAccess(filePath, mode = fs.F_OK) {
 const Buffer = {
 	applyDiff(diff) {
 		this.content = applyDiff(this.content, diff);
+	},
+	isDirty() {
+		return this.content !== this.originalContent;
 	}
 };
 
 const FileBuffer = Object.assign(Object.create(Buffer), {
 	async save() {
 		await promisify(cb => fs.writeFile(this.filePath, this.content, cb));
+		this.originalContent = this.content;
 	}
 });
 
 function newFileBuffer(filePath, content = '', readonly = false) {
-	return Object.assign(Object.create(FileBuffer), { filePath, content, readonly });
+	return Object.assign(Object.create(FileBuffer), { filePath, content, readonly, originalContent : content });
 }
 
 export async function createFileBuffer(filePath) {

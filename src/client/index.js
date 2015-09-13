@@ -39,6 +39,10 @@ client.on('data', messageParser((message) => {
 		case messageTypes.EVENT:
 			const event = Object.assign({}, message);
 			delete event.type;
+			if (event.event === 'saved' && event.file === mainWindow.file) {
+				mainWindow.isDirty = false;
+				draw();
+			}
 			log(event);
 			break;
 		default:
