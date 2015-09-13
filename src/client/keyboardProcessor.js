@@ -30,6 +30,7 @@ function keyProcessor(bindings) {
 }
 
 export const keys = {
+	BACKSPACE : '\u007f',
 	ESCAPE : '\u001b'
 };
 

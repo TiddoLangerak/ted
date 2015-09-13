@@ -68,7 +68,14 @@ export function registerDrawable(drawFunction, priority = 0) {
 
 let isInitialized = false;
 
-export function draw() {
+export function draw(immediate) {
+	//If we don't need to draw immediately we'll schedule the drawing for the next tick.
+	//The main reason for this is to allow the buffers to temporarily be in an invalid state.
+	//As long the invalid state is fixed before the next tick then drawing won't fail.
+	if (!immediate) {
+		process.nextTick(() => draw(true));
+		return;
+	}
 	if (!isInitialized) {
 		initialize();
 		isInitialized = true;

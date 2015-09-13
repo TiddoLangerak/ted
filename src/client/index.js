@@ -81,9 +81,40 @@ const modes = {
 			draw();
 			return modes.normal;
 		},
+		[keys.BACKSPACE] : () => {
+			if (mainWindow.cursor.y === mainWindow.cursor.x === 0) {
+				return;
+			}
+			const to = {
+				line : mainWindow.cursor.y,
+				column : mainWindow.cursor.x
+			};
+			let from;
+			if (mainWindow.cursor.x > 0) {
+				from = {
+					line : mainWindow.cursor.y,
+					column : mainWindow.cursor.x - 1
+				};
+			} else {
+				from = {
+					line : mainWindow.cursor.y - 1,
+					column : mainWindow.lineLength(mainWindow.cursor.y - 1)
+				};
+			}
+			mainWindow.content = applyDiff(mainWindow.lines, {
+				type : diffTypes.DELETE,
+				from, to
+			});
+			mainWindow.updateCursor(cursor => {
+				cursor.y = from.line;
+				cursor.x = from.column;
+			});
+		},
 		default : (ch, key) => {
 			let isChar = true;
-			if (key && (key.ctrl || key.meta)) {
+			if (!ch ||
+					key && (key.ctrl || key.meta)
+				 ) {
 				isChar = false;
 			}
 			if (isChar) {
