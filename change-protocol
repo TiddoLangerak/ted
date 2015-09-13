@@ -7,3 +7,21 @@ Changes are done like this:
 - Clients process the *low-level* operation on it's internal representation of the buffer
 
 For the initial state clients may *not* process operations to the visual buffer before they got a response from the server to prevent race conditions. This will have to be thought out properly first
+
+
+UPDATE:
+better idea, which will result in easier code:
+- User still inputs high-levels
+- Clients still translate these to low-level
+- Clients assign unique ids to each low-level op
+- Clients directly perform the action on the client-side buffer
+- Client puts action in a not-synced-queue together with a rollback action
+- Clients sends change to the server
+- Server broadcast changes as soon as it processes them
+- If client recieves broadcasted changes in the same order as the not-synced-queue it can shift them from the queue
+- If clients recieves intermediate changes it must rollback all changes in the not-synced-queue,
+  apply the intermediate change, and then reapply the changes from the queue
+
+
+
+

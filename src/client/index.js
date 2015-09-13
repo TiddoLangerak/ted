@@ -8,6 +8,8 @@ import keyboardProcessor, { ctrl, keys } from './keyboardProcessor';
 import window from './window';
 import util from 'util';
 import { fillLine } from './screenBufferUtils';
+import uuid from 'uuid';
+import { applyDiff, diffTypes } from '../diff';
 
 const socketPath = getSocketPath();
 const client = net.connect({ path : socketPath}, () => {
@@ -25,6 +27,7 @@ client.on('data', messageParser((message) => {
 	switch(message.type) {
 		case messageTypes.BUFFER:
 			mainWindow.content = message.buffer.content;
+			mainWindow.file = message.buffer.filePath;
 			draw();
 			break;
 		default:
@@ -77,6 +80,34 @@ const modes = {
 			currentMode = 'normal';
 			draw();
 			return modes.normal;
+		},
+		default : (ch, key) => {
+			let isChar = true;
+			if (key && (key.ctrl || key.meta)) {
+				isChar = false;
+			}
+			if (isChar) {
+				let text = ch;
+				//TODO: this better
+				if (ch === '\r') {
+					text = '\n';
+				}
+				mainWindow.content = applyDiff(mainWindow.lines, {
+					type : diffTypes.INSERT,
+					line : mainWindow.cursor.y,
+					column : mainWindow.cursor.x,
+					text
+				});
+				if (text === '\n') {
+					mainWindow.updateCursor(cursor => {
+						cursor.y++;
+						cursor.x = 0;
+					});
+				} else {
+					mainWindow.updateCursor(cursor => cursor.x++);
+				}
+				//TODO: update stuff
+			}
 		}
 	}
 };

@@ -17,6 +17,7 @@
     "ansi-escapes": "^1.1.0",
     "ansi-styles": "^2.1.0",
     "babel-runtime": "^5.8.20",
-    "keypress": "^0.2.1"
+    "keypress": "^0.2.1",
+    "uuid": "^2.0.1"
   }
 }

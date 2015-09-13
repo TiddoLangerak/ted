@@ -4,7 +4,11 @@
  *
  * If the text is longer than the line then the text will be cut off
  */
-export function fillLine(line, text, modifiers = new Set(), filler = ' ', fillerModifiers = new Set()) {
+export function fillLine(line, text, {
+		modifiers = new Set(),
+		filler = ' ',
+		fillerModifiers = new Set()
+	} = {}) {
 	const numChars = Math.min(line.length, text.length);
 	let i = 0;
 	for (; i < numChars; i++) {

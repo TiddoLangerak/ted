@@ -20,5 +20,6 @@ export const messageTypes = {
 	RPC : 'rpc',
 	EVENT : 'event',
 	BUFFER : 'buffer',
-	ERROR : 'error'
+	ERROR : 'error',
+	DIFF : 'diff'
 };
