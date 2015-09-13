@@ -24,6 +24,7 @@ const mainWindow = window('');
 
 const contentManager = ContentManager(mainWindow, client);
 registerCommand(':w', contentManager.saveBuffer);
+registerCommand(':q', process.exit);
 
 //TODO: share this with server.js
 client.on('data', messageParser((message) => {
