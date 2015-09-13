@@ -1,11 +1,15 @@
 import escapes from 'ansi-escapes';
 
+//This will be used to keep track of what is already drawn on screen
+let currentRows = [];
 function drawBuffer(buffer) {
-	//TODO: incremental drawing instead of refreshing the entire buffer
 	const rows = [];
 	let modifiers = new Set();
-	buffer.forEach(row => {
-		const rowTokens = [];
+	buffer.forEach((row, idx) => {
+		const rowTokens = [
+			escapes.cursorTo(0, idx),
+			escapes.eraseLine
+		];
 		row.forEach(cel => {
 			modifiers.forEach(currentMod => {
 				if (!cel.modifiers.has(currentMod)) {
@@ -20,11 +24,14 @@ function drawBuffer(buffer) {
 			rowTokens.push(cel.ch);
 			modifiers = cel.modifiers;
 		});
-		rows.push(rowTokens);
+		rows.push(rowTokens.join(''));
 	});
-	let tokenString = rows.map(row => row.join('')).join('\n');
+	let tokenString = rows.filter((row, idx) =>
+		currentRows.length < idx || currentRows[idx] !== row
+	).join('\n');
 	tokenString += Array.from(modifiers).map(mod => mod.close).join('');
 	process.stdout.write(tokenString);
+	currentRows = rows;
 }
 
 function startAlternateBuffer() {
