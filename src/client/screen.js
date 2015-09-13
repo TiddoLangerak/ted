@@ -64,8 +64,9 @@ function initialize() {
 export const drawPriorities = {
 	CONTENT : 0,
 	CURSOR: 100,
-	LOG : 1000,
-	STATUS_LINE : 10000
+	STATUS_LINE : 1000,
+	COMMAND_LINE : 1000,
+	LOG : 10000
 };
 
 const drawables = [];

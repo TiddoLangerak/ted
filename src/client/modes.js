@@ -3,6 +3,17 @@ import { log, clearLog } from './screenLogger';
 import { draw } from './screen';
 import util from 'util';
 import { diffTypes } from '../diff';
+import commandDispatcher from './commandDispatcher';
+
+function isCharKey(ch, key) {
+	let isChar = true;
+	if (!ch ||
+			key && (key.ctrl || key.meta)
+		 ) {
+		isChar = false;
+	}
+	return isChar;
+}
 
 export default function Modes({ window, contentManager }) {
 	let currentMode = 'normal';
@@ -34,8 +45,37 @@ export default function Modes({ window, contentManager }) {
 			'i' : () => {
 				return changeMode('insert');
 			},
+			'a' : () => {
+				window.updateCursor((cursor) => cursor.x++);
+				return changeMode('insert');
+			},
+			':' : () => {
+				commandDispatcher.command = ':';
+				return changeMode('command');
+			},
 			default : (ch, key) => {
 				log(util.inspect(ch), key);
+			}
+		},
+		command : {
+			[keys.ESCAPE] : () => {
+				commandDispatcher.command = '';
+				return changeMode('normal');
+			},
+			[keys.BACKSPACE] : () => {
+				commandDispatcher.command = commandDispatcher.command.slice(0, -1);
+				draw();
+			},
+			'\r' : () => {
+				commandDispatcher.doIt();
+				commandDispatcher.command = '';
+				return changeMode('normal');
+			},
+			default : (ch, key) => {
+				if (isCharKey(ch, key)) {
+					commandDispatcher.command += ch;
+					draw();
+				}
 			}
 		},
 		insert : {
@@ -69,13 +109,7 @@ export default function Modes({ window, contentManager }) {
 				contentManager.processClientDiff(diff);
 			},
 			default : (ch, key) => {
-				let isChar = true;
-				if (!ch ||
-						key && (key.ctrl || key.meta)
-					 ) {
-					isChar = false;
-				}
-				if (isChar) {
+				if (isCharKey(ch, key)) {
 					let text = ch;
 					//TODO: this better
 					if (ch === '\r') {
