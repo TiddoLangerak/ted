@@ -28,6 +28,7 @@ const server = net.createServer((client) => {
 			case messageTypes.DIFF:
 				const buffer = await getBuffer(message.file);
 				buffer.applyDiff(message.diff);
+				clients.forEach(client => sendMessage(client, message));
 				break;
 
 			default:

@@ -10,6 +10,7 @@ import util from 'util';
 import { fixedLength, createSegment } from './screenBufferUtils';
 import { diffTypes } from '../diff';
 import styles from 'ansi-styles';
+import ContentManager from './contentManager';
 
 const socketPath = getSocketPath();
 const client = net.connect({ path : socketPath}, () => {
@@ -22,6 +23,8 @@ const client = net.connect({ path : socketPath}, () => {
 
 const mainWindow = window('');
 
+const contentManager = ContentManager(mainWindow, client);
+
 //TODO: share this with server.js
 client.on('data', messageParser((message) => {
 	switch(message.type) {
@@ -29,6 +32,9 @@ client.on('data', messageParser((message) => {
 			mainWindow.content = message.buffer.content;
 			mainWindow.file = message.buffer.filePath;
 			draw();
+			break;
+		case messageTypes.DIFF:
+			contentManager.processServerDiff(message);
 			break;
 		default:
 			error(`Unkown message type: ${message.type}`);
@@ -38,6 +44,7 @@ client.on('data', messageParser((message) => {
 client.on('end', () => {
 	log('Disconnected');
 });
+
 
 
 let currentMode = 'normal';
@@ -121,8 +128,7 @@ const modes = {
 				type : diffTypes.DELETE,
 				from, to
 			};
-			mainWindow.processDiff(diff);
-			sendMessage(client, { type : messageTypes.DIFF, file : mainWindow.file, diff });
+			contentManager.processClientDiff(diff);
 		},
 		default : (ch, key) => {
 			let isChar = true;
@@ -143,9 +149,7 @@ const modes = {
 					column : mainWindow.cursor.x,
 					text
 				};
-				mainWindow.processDiff(diff);
-				sendMessage(client, { type : messageTypes.DIFF, file : mainWindow.file, diff });
-				//TODO: update stuff
+				contentManager.processClientDiff(diff);
 			}
 		}
 	}
