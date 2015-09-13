@@ -19,4 +19,23 @@ export function fillLine(line, text, {
 		line[i].ch = filler;
 		line[i].modifiers = fillerModifiers;
 	}
+	return line;
+}
+
+/**
+ * Creates a fixed-length text segment.
+ */
+export function fixedLength(text, length, opts) {
+	const line = Array.from(new Array(length), () => { return { ch : ' ', modifiers : new Set() }; });
+	return fillLine(line, text, opts);
+}
+
+/**
+ * Creates a styled segment
+ */
+export function createSegment(text, modifiers = new Set()) {
+	return text.split('')
+		.map(ch => {
+			return { ch, modifiers };
+		});
 }

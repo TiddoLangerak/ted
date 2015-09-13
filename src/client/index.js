@@ -7,7 +7,7 @@ import { error, log, clearLog } from './screenLogger';
 import keyboardProcessor, { ctrl, keys } from './keyboardProcessor';
 import window from './window';
 import util from 'util';
-import { fillLine } from './screenBufferUtils';
+import { fixedLength, createSegment } from './screenBufferUtils';
 import { diffTypes } from '../diff';
 import styles from 'ansi-styles';
 
@@ -42,16 +42,24 @@ client.on('end', () => {
 
 let currentMode = 'normal';
 
-const modeLineModifiers = new Set([styles.bgBlue, styles.bold]);
-const modeLineOpts = {
-	modifiers : modeLineModifiers,
-	fillerModifiers : modeLineModifiers
+const statusLineBg = styles.bgBlue;
+const statusLineMods = new Set([statusLineBg]);
+const modeMods = new Set([statusLineBg, styles.bold]);
+const statusLineModifiers = new Set([statusLineBg]);
+const statusLineOpts = {
+	modifiers : statusLineModifiers,
+	fillerModifiers : statusLineModifiers
 };
 registerDrawable(buffer => {
-	fillLine(buffer[buffer.length - 2], //Command line is below this one
-					 currentMode.toUpperCase(),
-					 modeLineOpts
-					 );
+	const statusLine = [
+		...createSegment(currentMode.toUpperCase(), modeMods),
+		...createSegment(' | ', statusLineMods)
+	];
+	const fileNameSpace = buffer[buffer.length - 2].length - statusLine.length;
+	const fileName = mainWindow.file || '';
+	const visibleFileName = fileName.substr(-fileNameSpace);
+	const fileNameSegment = fixedLength(visibleFileName, fileNameSpace, statusLineOpts);
+	buffer[buffer.length - 2] = [...statusLine, ...fileNameSegment];
 }, drawPriorities.STATUS_LINE);
 
 const modes = {
