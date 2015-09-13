@@ -1,6 +1,8 @@
 import { draw, registerDrawable, drawPriorities } from './screen';
 import styles from 'ansi-styles';
 import { fillLine } from './screenBufferUtils';
+import { applyDiff, diffTypes } from '../diff';
+import { log } from './screenLogger';
 
 const Window = {};
 
@@ -45,6 +47,55 @@ export default function (content = '') {
 		                    window.lineLength(window.cursor.y)/* - 1 */,
 		                    window.cursor.x);
 		window.cursor.x = Math.max(0, window.cursor.x);
+		draw();
+	};
+
+	function pointInRange(from, to, point) {
+		if (point.y < from.y) {
+			return false;
+		}
+		if (point.y > to.y) {
+			return false;
+		}
+		if (point.y === from.y && point.x < from.x) {
+			return false;
+		}
+		if (point.y === to.y && point.x > to.x) {
+			return false;
+		}
+		return true;
+	}
+
+	window.processDiff = (diff) => {
+		applyDiff(lines, diff);
+		switch(diff.type) {
+			case diffTypes.DELETE:
+				if (pointInRange({ x : diff.from.column, y : diff.from.line },
+												 { x : diff.to.column, y : diff.to.line },
+												 window.cursor)) {
+					window.updateCursor(cursor => {
+						cursor.x = diff.from.column;
+						cursor.y = diff.from.line;
+					});
+				}
+				break;
+			case diffTypes.INSERT:
+				if (diff.line === window.cursor.y && diff.column <= window.cursor.x) {
+					window.updateCursor(cursor => {
+						const newLines = diff.text.split('\n');
+						cursor.y += newLines.length - 1;
+						if (newLines.length > 1) {
+							cursor.x = 0;
+						}
+						cursor.x += newLines.pop().length;
+					});
+				} else if (diff.line < window.cursor.y) {
+					window.updateCursor(cursor => {
+						cursor.y += diff.text.split('\n').length - 1;
+					});
+				}
+				break;
+		}
 		draw();
 	};
 	window.tabWidth = 2;

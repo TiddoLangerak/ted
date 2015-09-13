@@ -82,7 +82,7 @@ const modes = {
 			return modes.normal;
 		},
 		[keys.BACKSPACE] : () => {
-			if (mainWindow.cursor.y === mainWindow.cursor.x === 0) {
+			if (mainWindow.cursor.y === 0 &&  mainWindow.cursor.x === 0) {
 				return;
 			}
 			const to = {
@@ -101,13 +101,9 @@ const modes = {
 					column : mainWindow.lineLength(mainWindow.cursor.y - 1)
 				};
 			}
-			mainWindow.content = applyDiff(mainWindow.lines, {
+			mainWindow.processDiff({
 				type : diffTypes.DELETE,
 				from, to
-			});
-			mainWindow.updateCursor(cursor => {
-				cursor.y = from.line;
-				cursor.x = from.column;
 			});
 		},
 		default : (ch, key) => {
@@ -123,20 +119,12 @@ const modes = {
 				if (ch === '\r') {
 					text = '\n';
 				}
-				mainWindow.content = applyDiff(mainWindow.lines, {
+				mainWindow.processDiff({
 					type : diffTypes.INSERT,
 					line : mainWindow.cursor.y,
 					column : mainWindow.cursor.x,
 					text
 				});
-				if (text === '\n') {
-					mainWindow.updateCursor(cursor => {
-						cursor.y++;
-						cursor.x = 0;
-					});
-				} else {
-					mainWindow.updateCursor(cursor => cursor.x++);
-				}
 				//TODO: update stuff
 			}
 		}
