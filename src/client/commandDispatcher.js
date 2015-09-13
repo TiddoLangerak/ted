@@ -15,7 +15,7 @@ const commandDispatcher = {
 		}
 	},
 	registerCommand(name, action) {
-		commands.add(name, action);
+		commands.set(name, action);
 	}
 };
 

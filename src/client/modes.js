@@ -27,7 +27,7 @@ export default function Modes({ window, contentManager }) {
 			[ctrl('c')] : () => {
 				process.exit();
 			},
-			'\r' : () => {
+			[keys.ESCAPE] : () => {
 				clearLog();
 			},
 			'h' : () => {

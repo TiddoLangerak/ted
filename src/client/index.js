@@ -9,6 +9,7 @@ import window from './window';
 import ContentManager from './contentManager';
 import Modes from './modes';
 import StatusLine from './statusLine';
+import { registerCommand } from './commandDispatcher';
 
 const socketPath = getSocketPath();
 const client = net.connect({ path : socketPath}, () => {
@@ -22,6 +23,7 @@ const client = net.connect({ path : socketPath}, () => {
 const mainWindow = window('');
 
 const contentManager = ContentManager(mainWindow, client);
+registerCommand(':w', contentManager.saveBuffer);
 
 //TODO: share this with server.js
 client.on('data', messageParser((message) => {
@@ -33,6 +35,11 @@ client.on('data', messageParser((message) => {
 			break;
 		case messageTypes.DIFF:
 			contentManager.processServerDiff(message);
+			break;
+		case messageTypes.EVENT:
+			const event = Object.assign({}, message);
+			delete event.type;
+			log(event);
 			break;
 		default:
 			error(`Unkown message type: ${message.type}`);

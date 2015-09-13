@@ -22,7 +22,11 @@ const Buffer = {
 	}
 };
 
-const FileBuffer = Object.create(Buffer);
+const FileBuffer = Object.assign(Object.create(Buffer), {
+	async save() {
+		await promisify(cb => fs.writeFile(this.filePath, this.content, cb));
+	}
+});
 
 function newFileBuffer(filePath, content = '', readonly = false) {
 	return Object.assign(Object.create(FileBuffer), { filePath, content, readonly });

@@ -29,6 +29,13 @@ export default function ContentManager(window, client) {
 				//TODO: implement rollback & reapply
 				throw new Error('Out of sync with server. Cannot do anything but fail now');
 			}
+		},
+		saveBuffer() {
+			sendMessage(client, {
+				type : messageTypes.RPC,
+				action : 'saveFile',
+				arguments : { file : window.file }
+			});
 		}
 	};
 }
