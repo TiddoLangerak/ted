@@ -2,28 +2,29 @@ import escapes from 'ansi-escapes';
 
 function drawBuffer(buffer) {
 	//TODO: incremental drawing instead of refreshing the entire buffer
-	const tokens = [];
+	const rows = [];
 	let modifiers = new Set();
 	buffer.forEach(row => {
+		const rowTokens = [];
 		row.forEach(cel => {
 			modifiers.forEach(currentMod => {
 				if (!cel.modifiers.has(currentMod)) {
-					tokens.push(currentMod.close);
+					rowTokens.push(currentMod.close);
 				}
 			});
 			cel.modifiers.forEach(newMod => {
 				if (!modifiers.has(newMod)) {
-					tokens.push(newMod.open);
+					rowTokens.push(newMod.open);
 				}
 			});
-			tokens.push(cel.ch);
+			rowTokens.push(cel.ch);
 			modifiers = cel.modifiers;
 		});
-		tokens.push('\n');
+		rows.push(rowTokens);
 	});
-	tokens.pop(); //trailing newline
-	modifiers.forEach(mod => tokens.push(mod.close));
-	process.stdout.write(tokens.join(''));
+	let tokenString = rows.map(row => row.join('')).join('\n');
+	tokenString += Array.from(modifiers).map(mod => mod.close).join('');
+	process.stdout.write(tokenString);
 }
 
 function startAlternateBuffer() {
