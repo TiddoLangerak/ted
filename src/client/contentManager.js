@@ -1,7 +1,9 @@
 import { sendMessage, messageTypes } from '../protocol.js';
 import uuid from 'uuid';
-import { log } from './screenLogger';
 
+/**
+ * Manages synchronization of content with the server
+ */
 export default function ContentManager(window, client) {
 	const changes = [];
 	return {

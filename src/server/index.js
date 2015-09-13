@@ -28,6 +28,7 @@ const server = net.createServer((client) => {
 			case messageTypes.DIFF:
 				const buffer = await getBuffer(message.file);
 				buffer.applyDiff(message.diff);
+				//To keep things in sync we broadcast to all the clients.
 				clients.forEach(client => sendMessage(client, message));
 				break;
 
