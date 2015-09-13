@@ -9,6 +9,7 @@ import window from './window';
 import util from 'util';
 import { fillLine } from './screenBufferUtils';
 import { diffTypes } from '../diff';
+import styles from 'ansi-styles';
 
 const socketPath = getSocketPath();
 const client = net.connect({ path : socketPath}, () => {
@@ -41,8 +42,16 @@ client.on('end', () => {
 
 let currentMode = 'normal';
 
+const modeLineModifiers = new Set([styles.bgBlue, styles.bold]);
+const modeLineOpts = {
+	modifiers : modeLineModifiers,
+	fillerModifiers : modeLineModifiers
+};
 registerDrawable(buffer => {
-	fillLine(buffer[buffer.length - 1], currentMode.toUpperCase());
+	fillLine(buffer[buffer.length - 2], //Command line is below this one
+					 currentMode.toUpperCase(),
+					 modeLineOpts
+					 );
 }, drawPriorities.STATUS_LINE);
 
 const modes = {

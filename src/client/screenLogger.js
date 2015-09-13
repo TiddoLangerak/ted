@@ -9,7 +9,7 @@ function storeLog(msg, type) {
 	if (typeof msg !== 'string') {
 		msg = util.inspect(msg);
 	}
-	logs.push({ msg, type });
+	msg.split('\n').forEach(line => logs.push({ msg : line, type }));
 }
 
 export function log(...msgs) {
@@ -26,17 +26,27 @@ export function clearLog() {
 	draw();
 }
 
+
+const logBg = styles.bgBlack;
 const modifiers = {
-	log : new Set(),
-	error : new Set([styles.red])
+	default : new Set([logBg]),
+	log : new Set([logBg]),
+	error : new Set([styles.red, logBg])
 };
 
 registerDrawable((buffer) => {
 	if (logs.length) {
-		const start = buffer.length - logs.length - 2; //-1 because of the heading, and another -1 because of statusline
-		fillLine(buffer[start], '---LOG---');
-		logs.forEach((log, idx) => {
-			fillLine(buffer[start + 1 + idx], log.msg, { modifiers : modifiers[log.type] });
+		//-1 because of the header, -1 for status line, -1 for command line
+		const virtualStart = buffer.length - logs.length - 3;
+		const start = Math.max(0, virtualStart);
+		fillLine(buffer[start], '---LOG---', { modifiers : modifiers.default, fillerModifiers : modifiers.default });
+		logs
+			.filter((log, idx) =>
+				//We only display the last log
+				virtualStart + 1 + idx > 0
+			)
+			.forEach((log, idx) => {
+			fillLine(buffer[start + 1 + idx], log.msg, { modifiers : modifiers[log.type], fillerModifiers: modifiers.default });
 		});
 	}
 }, drawPriorities.LOG);

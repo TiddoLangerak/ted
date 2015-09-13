@@ -4,12 +4,12 @@ import escapes from 'ansi-escapes';
 let currentRows = [];
 function drawBuffer(buffer) {
 	const rows = [];
-	let modifiers = new Set();
 	buffer.forEach((row, idx) => {
 		const rowTokens = [
 			escapes.cursorTo(0, idx),
 			escapes.eraseLine
 		];
+		let modifiers = new Set();
 		row.forEach(cel => {
 			modifiers.forEach(currentMod => {
 				if (!cel.modifiers.has(currentMod)) {
@@ -24,12 +24,13 @@ function drawBuffer(buffer) {
 			rowTokens.push(cel.ch);
 			modifiers = cel.modifiers;
 		});
-		rows.push(rowTokens.join(''));
+		const tokenString = rowTokens.join('');
+		const closeMods = Array.from(modifiers).map(mod => mod.close).join('');
+		rows.push(tokenString + closeMods);
 	});
 	let tokenString = rows.filter((row, idx) =>
 		currentRows.length < idx || currentRows[idx] !== row
 	).join('\n');
-	tokenString += Array.from(modifiers).map(mod => mod.close).join('');
 	process.stdout.write(tokenString);
 	currentRows = rows;
 }

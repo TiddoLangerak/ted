@@ -19,7 +19,6 @@ async function checkAccess(filePath, mode = fs.F_OK) {
 const Buffer = {
 	applyDiff(diff) {
 		this.content = applyDiff(this.content, diff);
-		console.log(this);
 	}
 };
 
