@@ -1,5 +1,6 @@
 import fs from 'fs';
 import promisify from '../promisify';
+import { applyDiff } from '../diff';
 
 /**
  * Wrapper around fs.access to make it work properly with promises
@@ -15,7 +16,12 @@ async function checkAccess(filePath, mode = fs.F_OK) {
 	});
 }
 
-const Buffer = {};
+const Buffer = {
+	applyDiff(diff) {
+		this.content = applyDiff(this.content, diff);
+		console.log(this);
+	}
+};
 
 const FileBuffer = Object.create(Buffer);
 

@@ -8,8 +8,7 @@ import keyboardProcessor, { ctrl, keys } from './keyboardProcessor';
 import window from './window';
 import util from 'util';
 import { fillLine } from './screenBufferUtils';
-import uuid from 'uuid';
-import { applyDiff, diffTypes } from '../diff';
+import { diffTypes } from '../diff';
 
 const socketPath = getSocketPath();
 const client = net.connect({ path : socketPath}, () => {
@@ -101,10 +100,12 @@ const modes = {
 					column : mainWindow.lineLength(mainWindow.cursor.y - 1)
 				};
 			}
-			mainWindow.processDiff({
+			const diff = {
 				type : diffTypes.DELETE,
 				from, to
-			});
+			};
+			mainWindow.processDiff(diff);
+			sendMessage(client, { type : messageTypes.DIFF, file : mainWindow.file, diff });
 		},
 		default : (ch, key) => {
 			let isChar = true;
@@ -119,12 +120,14 @@ const modes = {
 				if (ch === '\r') {
 					text = '\n';
 				}
-				mainWindow.processDiff({
+				const diff = {
 					type : diffTypes.INSERT,
 					line : mainWindow.cursor.y,
 					column : mainWindow.cursor.x,
 					text
-				});
+				};
+				mainWindow.processDiff(diff);
+				sendMessage(client, { type : messageTypes.DIFF, file : mainWindow.file, diff });
 				//TODO: update stuff
 			}
 		}

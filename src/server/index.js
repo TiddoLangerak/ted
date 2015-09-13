@@ -3,6 +3,7 @@ import net from 'net';
 import { getSocketPath } from '../socketManager';
 import rpc from './rpc';
 import { messageParser, messageTypes, sendMessage } from '../protocol';
+import { getBuffer } from './bufferManager';
 
 const clients = new Set();
 
@@ -24,6 +25,11 @@ const server = net.createServer((client) => {
 					sendMessage(client, { type : messageTypes.ERROR, message : e.message });
 				}
 				break;
+			case messageTypes.DIFF:
+				const buffer = await getBuffer(message.file);
+				buffer.applyDiff(message.diff);
+				break;
+
 			default:
 				console.error(`Unkown message type: ${message.type}`);
 		}

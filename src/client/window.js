@@ -2,7 +2,6 @@ import { draw, registerDrawable, drawPriorities } from './screen';
 import styles from 'ansi-styles';
 import { fillLine } from './screenBufferUtils';
 import { applyDiff, diffTypes } from '../diff';
-import { log } from './screenLogger';
 
 const Window = {};
 
