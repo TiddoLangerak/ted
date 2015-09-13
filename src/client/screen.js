@@ -36,34 +36,7 @@ function closeAlternateBuffer() {
 	process.stdout.write(escapes.cursorShow);
 }
 
-export const drawPriorities = {
-	CONTENT : 0,
-	CURSOR: 100,
-	LOG : 1000,
-	STATUS_LINE : 10000
-};
-
-function createScreen() {
-	const drawables = [];
-
-	function registerDrawable(drawFunction, priority = 0) {
-		drawables.push({ draw: drawFunction, priority });
-		drawables.sort((a, b) => a.priority - b.priority); //highest prio last, such that it'll override the rest
-	}
-
-	function draw() {
-		//TODO: instead of letting each drawable drawing directly to the screen they should work on
-		//some virtual screen in memory (e.g. an array of lines, or a matrix).
-		//The screen class should then do the actual drawing.
-
-		const buffer = Array.from(new Array(process.stdout.rows), () => {
-			return Array.from(new Array(process.stdout.columns), () => {
-				return { ch : ' ', modifiers : new Set() };
-			});
-		});
-		drawables.forEach((drawable) => drawable.draw(buffer));
-		drawBuffer(buffer);
-	}
+function initialize() {
 
 	startAlternateBuffer();
 
@@ -78,9 +51,39 @@ function createScreen() {
 	return { registerDrawable, draw };
 }
 
-let instance = null;
 
-export default function() {
-	instance = instance || createScreen();
-	return instance;
+export const drawPriorities = {
+	CONTENT : 0,
+	CURSOR: 100,
+	LOG : 1000,
+	STATUS_LINE : 10000
+};
+
+const drawables = [];
+
+export function registerDrawable(drawFunction, priority = 0) {
+	drawables.push({ draw: drawFunction, priority });
+	drawables.sort((a, b) => a.priority - b.priority); //highest prio last, such that it'll override the rest
 }
+
+let isInitialized = false;
+
+export function draw() {
+	if (!isInitialized) {
+		initialize();
+		isInitialized = true;
+	}
+
+	//TODO: instead of letting each drawable drawing directly to the screen they should work on
+	//some virtual screen in memory (e.g. an array of lines, or a matrix).
+	//The screen class should then do the actual drawing.
+
+	const buffer = Array.from(new Array(process.stdout.rows), () => {
+		return Array.from(new Array(process.stdout.columns), () => {
+			return { ch : ' ', modifiers : new Set() };
+		});
+	});
+	drawables.forEach((drawable) => drawable.draw(buffer));
+	drawBuffer(buffer);
+}
+

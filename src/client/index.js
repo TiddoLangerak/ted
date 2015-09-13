@@ -2,14 +2,12 @@ import net from 'net';
 import { getSocketPath } from '../socketManager';
 import path from 'path';
 import { messageParser, sendMessage, messageTypes } from '../protocol.js';
-import screen, { drawPriorities } from './screen';
+import { draw, registerDrawable, drawPriorities } from './screen';
 import { error, log, clearLog } from './screenLogger';
 import keyboardProcessor, { ctrl, keys } from './keyboardProcessor';
 import window from './window';
 import util from 'util';
 import { fillLine } from './screenBufferUtils';
-
-const { registerDrawable, draw } = screen();
 
 const socketPath = getSocketPath();
 const client = net.connect({ path : socketPath}, () => {

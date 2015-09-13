@@ -1,8 +1,6 @@
-import screen, { drawPriorities } from './screen';
+import { draw, registerDrawable, drawPriorities } from './screen';
 import styles from 'ansi-styles';
 import { fillLine } from './screenBufferUtils';
-
-const { registerDrawable, draw } = screen();
 
 const Window = {};
 
