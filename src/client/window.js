@@ -33,22 +33,36 @@ export default function (content = '') {
 		}
 	};
 	window.isDirty = false;
+	//nr of lines that the cursor must stay from the edge
+	window.cursorPadding = 3;
 	window.updateCursor = (updateFunc) => {
 		updateFunc(window.cursor);
 		//Note: both for y and x the min call must be done before the max call, since
 		//it is possible that a negative number comes out of the Math.min call (when rows or cols = 0)
-		window.cursor.y = Math.min(process.stdout.rows - 1,
+		window.cursor.y = Math.min(
 		                    lines.length - 1,
-		                    window.cursor.y);
+		                    window.cursor.y
+		);
 		window.cursor.y = Math.max(0, window.cursor.y);
 
-		window.cursor.x = Math.min(process.stdout.columns - 1,
-												//TODO: implement a thing as "cursor at line ending"
+		window.cursor.x = Math.min(
+		                    //TODO: implement a thing as "cursor at line ending"
 		                    window.lineLength(window.cursor.y)/* - 1 */,
-		                    window.cursor.x);
+		                    window.cursor.x
+		);
 		window.cursor.x = Math.max(0, window.cursor.x);
+
+		//TODO: get this from somewhere
+		const windowHeight = process.stdout.rows - 2;
+		//Scroll
+		if (window.cursor.y - window.bufferOffset >= windowHeight - window.cursorPadding) {
+			window.bufferOffset = window.cursor.y - windowHeight + window.cursorPadding + 1;
+		} else if (window.cursor.y - window.bufferOffset - window.cursorPadding < 0) {
+			window.bufferOffset = Math.max(0, window.cursor.y - window.cursorPadding);
+		}
 		draw();
 	};
+	window.bufferOffset = 0;
 
 	function pointInRange(from, to, point) {
 		if (point.y < from.y) {
@@ -125,7 +139,10 @@ export default function (content = '') {
 	 * on the yth line. The screen coordinate will be a  {column, row} pair.
 	 */
 	function getScreenCoordinates(bufferCoordinates) {
-		const screenCoordinates = { column : bufferCoordinates.x, row : bufferCoordinates.y };
+		const screenCoordinates = {
+			column : bufferCoordinates.x,
+			row : bufferCoordinates.y - window.bufferOffset
+		};
 		const leadingTabs = window.lines[bufferCoordinates.y]
 			.substr(0, bufferCoordinates.x)
 			.split('\t')
@@ -138,7 +155,7 @@ export default function (content = '') {
 
 
 	registerDrawable(buffer => {
-		lines.slice(0, buffer.length).forEach((line, idx) => fillLine(buffer[idx], normalizeText(line)));
+		lines.slice(window.bufferOffset, window.bufferOffset + buffer.length).forEach((line, idx) => fillLine(buffer[idx], normalizeText(line)));
 
 		const cursorPos = getScreenCoordinates(window.cursor);
 		//We need to copy the modifiers since it may be shared with other characters
