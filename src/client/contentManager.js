@@ -33,11 +33,11 @@ export default function ContentManager(window, client) {
 			window.isDirty = msg.isDirty;
 			draw();
 		},
-		saveBuffer() {
+		saveBuffer(force = false) {
 			sendMessage(client, {
 				type : messageTypes.RPC,
 				action : 'saveFile',
-				arguments : { file : window.file }
+				arguments : { file : window.file, force }
 			});
 		}
 	};

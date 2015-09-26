@@ -26,7 +26,19 @@ const Buffer = {
 };
 
 const FileBuffer = Object.assign(Object.create(Buffer), {
-	async save() {
+	async save(force) {
+		if (!force) {
+			//If we don't force save we first check if the file hasn't changed in the mean time.
+			//It would be a shame if we overwrite external changes without notifying the user
+			const readable = await checkAccess(this.filePath, fs.R_OK);
+			if (readable) {
+				const currentContent = await promisify(cb => fs.readFile(this.filePath, 'utf8', cb));
+				if (currentContent !== this.originalContent) {
+					//TODO: indicate this somewhere
+					throw new Error('Buffer has changed on disk. Force save to overwrite');
+				}
+			}
+		}
 		await promisify(cb => fs.writeFile(this.filePath, this.content, cb));
 		this.originalContent = this.content;
 	}

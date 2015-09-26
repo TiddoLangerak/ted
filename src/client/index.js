@@ -24,6 +24,7 @@ const mainWindow = window('');
 
 const contentManager = ContentManager(mainWindow, client);
 registerCommand(':w', contentManager.saveBuffer);
+registerCommand(':w!', () => contentManager.saveBuffer(true));
 registerCommand(':q', process.exit);
 
 //TODO: share this with server.js
@@ -45,6 +46,10 @@ client.on('data', messageParser((message) => {
 				draw();
 			}
 			log(event);
+			break;
+		case messageTypes.ERROR:
+			error(message.message);
+			draw();
 			break;
 		default:
 			error(`Unkown message type: ${message.type}`);
