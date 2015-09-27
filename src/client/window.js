@@ -36,33 +36,6 @@ export default function (content = '') {
 	window.isDirty = false;
 	//nr of lines that the cursor must stay from the edge
 	window.cursorPadding = 3;
-	window.updateCursor = (updateFunc) => {
-		updateFunc(window.cursor);
-		//Note: both for y and x the min call must be done before the max call, since
-		//it is possible that a negative number comes out of the Math.min call (when rows or cols = 0)
-		window.cursor.y = Math.min(
-		                    lines.length - 1,
-		                    window.cursor.y
-		);
-		window.cursor.y = Math.max(0, window.cursor.y);
-
-		window.cursor.x = Math.min(
-		                    //TODO: implement a thing as "cursor at line ending"
-		                    window.lineLength(window.cursor.y)/* - 1 */,
-		                    window.cursor.x
-		);
-		window.cursor.x = Math.max(0, window.cursor.x);
-
-		//TODO: get this from somewhere
-		const windowHeight = process.stdout.rows - 2;
-		//Scroll
-		if (window.cursor.y - window.bufferOffset >= windowHeight - window.cursorPadding) {
-			window.bufferOffset = window.cursor.y - windowHeight + window.cursorPadding + 1;
-		} else if (window.cursor.y - window.bufferOffset - window.cursorPadding < 0) {
-			window.bufferOffset = Math.max(0, window.cursor.y - window.cursorPadding);
-		}
-		draw();
-	};
 	window.bufferOffset = 0;
 
 	function pointInRange(from, to, point) {
@@ -88,7 +61,7 @@ export default function (content = '') {
 				if (pointInRange({ x : diff.from.column, y : diff.from.line },
 												 { x : diff.to.column, y : diff.to.line },
 												 window.cursor)) {
-					window.updateCursor(cursor => {
+					window.cursor.update(cursor => {
 						cursor.x = diff.from.column;
 						cursor.y = diff.from.line;
 					});
@@ -96,7 +69,7 @@ export default function (content = '') {
 				break;
 			case diffTypes.INSERT:
 				if (diff.line === window.cursor.y && diff.column <= window.cursor.x) {
-					window.updateCursor(cursor => {
+					window.cursor.update(cursor => {
 						const newLines = diff.text.split('\n');
 						cursor.y += newLines.length - 1;
 						if (newLines.length > 1) {
@@ -105,7 +78,7 @@ export default function (content = '') {
 						cursor.x += newLines.pop().length;
 					});
 				} else if (diff.line < window.cursor.y) {
-					window.updateCursor(cursor => {
+					window.cursor.update(cursor => {
 						cursor.y += diff.text.split('\n').length - 1;
 					});
 				}

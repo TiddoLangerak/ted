@@ -42,7 +42,8 @@ export default function Modes({ window, contentManager }) {
 				return changeMode('insert');
 			},
 			'A' : () => {
-				window.cursor.update((cursor) => cursor.x = window.lineLength(window.cursor.y));
+				window.cursor.moveToEOL();
+				return changeMode('insert');
 			},
 			':' : () => {
 				commandDispatcher.command = ':';
@@ -121,10 +122,11 @@ export default function Modes({ window, contentManager }) {
 					if (ch === '\r') {
 						text = '\n';
 					}
+					const coordinates = window.cursor.getResolvedCoordinates();
 					const diff = {
 						type : diffTypes.INSERT,
-						line : window.cursor.y,
-						column : window.cursor.x,
+						line : coordinates.y,
+						column : coordinates.x,
 						text
 					};
 					contentManager.processClientDiff(diff);
