@@ -24,22 +24,22 @@ function getScreenCoordinates(window, bufferCoordinates) {
 	return screenCoordinates;
 }
 
-function resolveAnchors(cursor, window) {
-	if (cursor.x === anchors.EOL) {
-		cursor.x = window.lineLength(window.cursor.y);
-	}
-}
-
 export default function createCursor(window) {
+	let x = 0;
 	const cursor = {
-		x: 0,
-		y: 0,
-		getResolvedCoordinates() {
-			const coordinates = { x : cursor.x, y : cursor.y };
-			resolveAnchors(coordinates, window);
-			return coordinates;
+		isAnchored() {
+			return !Number.isFinite(x);
 		},
-		resolveAnchors : () => resolveAnchors(cursor, window),
+		get x() {
+			if (x === anchors.EOL) {
+				return window.lineLength(window.cursor.y);
+			}
+			return x;
+		},
+		set x(val) {
+			x = val;
+		},
+		y: 0,
 		update(updateFunc) {
 			updateFunc(cursor);
 			//Note: both for y and x the min call must be done before the max call, since
@@ -51,13 +51,16 @@ export default function createCursor(window) {
 			cursor.y = Math.max(0, cursor.y);
 
 			//We can't do math with anchor points, so we need to check if we actually have a number
-			if (Number.isFinite(cursor.x)) {
+			if (!cursor.isAnchored()) {
 				cursor.x = Math.min(
-														//TODO: implement a thing as "cursor at line ending"
-														window.lineLength(cursor.y)/* - 1 */,
+														window.lineLength(cursor.y),
 														cursor.x
 				);
 				cursor.x = Math.max(0, cursor.x);
+				//Auto anchor
+				if (cursor.x === window.lineLength(cursor.y)) {
+					cursor.x = anchors.EOL;
+				}
 			}
 
 			//TODO: get this from somewhere
@@ -71,11 +74,9 @@ export default function createCursor(window) {
 			draw();
 		},
 		moveLeft() {
-			cursor.resolveAnchors();
 			cursor.update(cursor => cursor.x--);
 		},
 		moveRight() {
-			cursor.resolveAnchors();
 			cursor.update(cursor => cursor.x++);
 		},
 		moveUp() {
@@ -90,8 +91,7 @@ export default function createCursor(window) {
 
 	};
 	registerDrawable(buffer => {
-		const coordinates = cursor.getResolvedCoordinates();
-		const cursorPos = getScreenCoordinates(window, coordinates);
+		const cursorPos = getScreenCoordinates(window, cursor);
 		//We need to copy the modifiers since it may be shared with other characters
 		const mods = new Set(buffer[cursorPos.row][cursorPos.column].modifiers);
 		mods.add(styles.bgWhite);

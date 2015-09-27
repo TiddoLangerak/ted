@@ -45,6 +45,7 @@ export default function Modes({ window, contentManager }) {
 				window.cursor.moveToEOL();
 				return changeMode('insert');
 			},
+			'$' : window.cursor.moveToEOL,
 			':' : () => {
 				commandDispatcher.command = ':';
 				return changeMode('command');
@@ -122,11 +123,10 @@ export default function Modes({ window, contentManager }) {
 					if (ch === '\r') {
 						text = '\n';
 					}
-					const coordinates = window.cursor.getResolvedCoordinates();
 					const diff = {
 						type : diffTypes.INSERT,
-						line : coordinates.y,
-						column : coordinates.x,
+						line : window.cursor.y,
+						column : window.cursor.x,
 						text
 					};
 					contentManager.processClientDiff(diff);
