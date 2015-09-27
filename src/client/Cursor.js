@@ -1,7 +1,7 @@
 import { draw,  registerDrawable, drawPriorities } from './screen';
 import styles from 'ansi-styles';
 
-const anchors = {
+export const anchors = {
 	EOL : '$'
 };
 /**
@@ -31,7 +31,7 @@ export default function createCursor(window) {
 			return !Number.isFinite(x);
 		},
 		get x() {
-			if (x === anchors.EOL) {
+			if (cursor.isAt(anchors.EOL)) {
 				return window.lineLength(window.cursor.y);
 			}
 			return x;
@@ -57,8 +57,8 @@ export default function createCursor(window) {
 														cursor.x
 				);
 				cursor.x = Math.max(0, cursor.x);
-				//Auto anchor
-				if (cursor.x === window.lineLength(cursor.y)) {
+				//Auto anchor (exclude 0 for empty lines)
+				if (cursor.x !== 0 && cursor.x === window.lineLength(cursor.y)) {
 					cursor.x = anchors.EOL;
 				}
 			}
@@ -72,6 +72,9 @@ export default function createCursor(window) {
 				window.bufferOffset = Math.max(0, cursor.y - window.cursorPadding);
 			}
 			draw();
+		},
+		isAt(point) {
+			return x === point;
 		},
 		moveLeft() {
 			cursor.update(cursor => cursor.x--);

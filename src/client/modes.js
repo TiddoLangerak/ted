@@ -4,6 +4,7 @@ import { draw } from './screen';
 import util from 'util';
 import { diffTypes } from '../diff';
 import commandDispatcher from './commandDispatcher';
+import { anchors } from './Cursor';
 
 function isCharKey(ch, key) {
 	let isChar = true;
@@ -50,17 +51,32 @@ export default function Modes({ window, contentManager }) {
 				commandDispatcher.command = ':';
 				return changeMode('command');
 			},
-			/*
 			'o' : () => {
-				wi
 					const diff = {
 						type : diffTypes.INSERT,
 						line : window.cursor.y,
-						column : window.cursor.x,
+						column : window.lineLength(window.cursor.y),
+						text : '\n'
 					};
 					contentManager.processClientDiff(diff);
-
-			},*/
+					//When we're at EOL then the newline gets inserted *before* the cursor, so it already moves
+					//one line down in the diff processing. Therefore we can't move down when we're at EOL
+					if (!window.cursor.isAt(anchors.EOL)) {
+						window.cursor.moveDown();
+					}
+					return changeMode('insert');
+			},
+			'O' : () => {
+				const diff = {
+					type : diffTypes.INSERT,
+					line : window.cursor.y,
+					column : 0,
+					text : '\n'
+				};
+				contentManager.processClientDiff(diff);
+				window.cursor.moveUp();
+				return changeMode('insert');
+			},
 			default : (ch, key) => {
 				log(util.inspect(ch), key);
 			}
@@ -88,6 +104,7 @@ export default function Modes({ window, contentManager }) {
 		},
 		insert : {
 			[keys.ESCAPE] : () => {
+				window.cursor.moveLeft();
 				return changeMode('normal');
 			},
 			[keys.BACKSPACE] : () => {
