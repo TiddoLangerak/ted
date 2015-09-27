@@ -1,9 +1,10 @@
 import { draw, registerDrawable, drawPriorities } from './screen';
-import styles from 'ansi-styles';
 import { fillLine } from './screenBufferUtils';
 import { applyDiff, diffTypes } from '../diff';
+import createCursor from './Cursor';
 
 const Window = {};
+
 
 export default function (content = '') {
 	let lines = content.split('\n');
@@ -24,7 +25,7 @@ export default function (content = '') {
 			}
 		}
 	});
-	window.cursor = { x : 0, y : 0 };
+	window.cursor = createCursor(window);
 	window.lineLength = (line) => {
 		if (lines.length < line) {
 			return 0;
@@ -133,36 +134,10 @@ export default function (content = '') {
 		return text;
 	}
 
-	/**
-	 * Gets the screen coordinates for a given buffer coordinate
-	 * The buffer coordinate should specify an {x, y} pair, corresponding to the xth character
-	 * on the yth line. The screen coordinate will be a  {column, row} pair.
-	 */
-	function getScreenCoordinates(bufferCoordinates) {
-		const screenCoordinates = {
-			column : bufferCoordinates.x,
-			row : bufferCoordinates.y - window.bufferOffset
-		};
-		const leadingTabs = window.lines[bufferCoordinates.y]
-			.substr(0, bufferCoordinates.x)
-			.split('\t')
-			.length - 1;
-
-		const columnOffset = leadingTabs * (window.tabWidth - 1);
-		screenCoordinates.column += columnOffset;
-		return screenCoordinates;
-	}
-
 
 	registerDrawable(buffer => {
-		lines.slice(window.bufferOffset, window.bufferOffset + buffer.length).forEach((line, idx) => fillLine(buffer[idx], normalizeText(line)));
-
-		const cursorPos = getScreenCoordinates(window.cursor);
-		//We need to copy the modifiers since it may be shared with other characters
-		const mods = new Set(buffer[cursorPos.row][cursorPos.column].modifiers);
-		mods.add(styles.bgWhite);
-		mods.add(styles.black);
-		buffer[cursorPos.row][cursorPos.column].modifiers = mods;
+		lines.slice(window.bufferOffset, window.bufferOffset + buffer.length)
+			.forEach((line, idx) => fillLine(buffer[idx], normalizeText(line)));
 	}, drawPriorities.CONTENT);
 
 	return window;

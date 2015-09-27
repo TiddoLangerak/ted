@@ -30,29 +30,35 @@ export default function Modes({ window, contentManager }) {
 			[keys.ESCAPE] : () => {
 				clearLog();
 			},
-			'h' : () => {
-				window.updateCursor((cursor) => cursor.x--);
-			},
-			'l' : () => {
-				window.updateCursor((cursor) => cursor.x++);
-			},
-			'j' : () => {
-				window.updateCursor((cursor) => cursor.y++);
-			},
-			'k' : () => {
-				window.updateCursor((cursor) => cursor.y--);
-			},
+			'h' : window.cursor.moveLeft,
+			'l' : window.cursor.moveRight,
+			'j' : window.cursor.moveDown,
+			'k' : window.cursor.moveUp,
 			'i' : () => {
 				return changeMode('insert');
 			},
 			'a' : () => {
-				window.updateCursor((cursor) => cursor.x++);
+				window.cursor.moveRight();
 				return changeMode('insert');
+			},
+			'A' : () => {
+				window.cursor.update((cursor) => cursor.x = window.lineLength(window.cursor.y));
 			},
 			':' : () => {
 				commandDispatcher.command = ':';
 				return changeMode('command');
 			},
+			/*
+			'o' : () => {
+				wi
+					const diff = {
+						type : diffTypes.INSERT,
+						line : window.cursor.y,
+						column : window.cursor.x,
+					};
+					contentManager.processClientDiff(diff);
+
+			},*/
 			default : (ch, key) => {
 				log(util.inspect(ch), key);
 			}
