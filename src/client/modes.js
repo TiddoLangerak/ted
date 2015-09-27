@@ -31,10 +31,10 @@ export default function Modes({ window, contentManager }) {
 			[keys.ESCAPE] : () => {
 				clearLog();
 			},
-			'h' : window.cursor.moveLeft,
-			'l' : window.cursor.moveRight,
-			'j' : window.cursor.moveDown,
-			'k' : window.cursor.moveUp,
+			'h' : () => window.cursor.moveLeft(),
+			'l' : () => window.cursor.moveRight(),
+			'j' : () => window.cursor.moveDown(),
+			'k' : () => window.cursor.moveUp(),
 			'i' : () => {
 				return changeMode('insert');
 			},
@@ -76,6 +76,69 @@ export default function Modes({ window, contentManager }) {
 				contentManager.processClientDiff(diff);
 				window.cursor.moveUp();
 				return changeMode('insert');
+			},
+			'f' : () => {
+				return {
+					default : (ch, key) => {
+						if (isCharKey(ch, key)) {
+							const offset = window.lines[window.cursor.y]
+								//We don't want to find the current character, so a +1 offset here
+								.substr(window.cursor.x + 1)
+								.indexOf(ch) + 1; //+1 to compensate for the +1 above
+							if (offset > 0) {
+								window.cursor.moveRight(offset);
+							}
+						}
+						return changeMode('normal');
+					}
+				};
+			},
+			'F' : () => {
+				return {
+					default : (ch, key) => {
+						if (isCharKey(ch, key)) {
+							const xPos = window.lines[window.cursor.y]
+								.substr(0, window.cursor.x)
+								.lastIndexOf(ch);
+							if (xPos > 0) {
+								window.cursor.update(cursor => cursor.x = xPos);
+							}
+						}
+						return changeMode('normal');
+					}
+				};
+			},
+			't' : () => {
+				return {
+					default : (ch, key) => {
+						if (isCharKey(ch, key)) {
+							const offset = window.lines[window.cursor.y]
+								//We don't want to find the current character, so a +1 offset here
+								.substr(window.cursor.x + 1)
+								.indexOf(ch);
+							if (offset > 0) {
+								window.cursor.moveRight(offset);
+							}
+						}
+						return changeMode('normal');
+					}
+				};
+			},
+			'T' : () => {
+				return {
+					default : (ch, key) => {
+						if (isCharKey(ch, key)) {
+							let xPos = window.lines[window.cursor.y]
+								.substr(0, window.cursor.x)
+								.lastIndexOf(ch);
+							if (xPos !== -1) {
+								xPos++;
+								window.cursor.update(cursor => cursor.x = xPos);
+							}
+						}
+						return changeMode('normal');
+					}
+				};
 			},
 			default : (ch, key) => {
 				log(util.inspect(ch), key);

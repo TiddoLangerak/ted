@@ -76,17 +76,17 @@ export default function createCursor(window) {
 		isAt(point) {
 			return x === point;
 		},
-		moveLeft() {
-			cursor.update(cursor => cursor.x--);
+		moveLeft(amount = 1) {
+			cursor.update(cursor => cursor.x -= amount);
 		},
-		moveRight() {
-			cursor.update(cursor => cursor.x++);
+		moveRight(amount = 1) {
+			cursor.update(cursor => cursor.x += amount);
 		},
-		moveUp() {
-			cursor.update(cursor => cursor.y--);
+		moveUp(amount = 1) {
+			cursor.update(cursor => cursor.y -= amount);
 		},
-		moveDown() {
-			cursor.update(cursor => cursor.y++);
+		moveDown(amount = 1) {
+			cursor.update(cursor => cursor.y += amount);
 		},
 		moveToEOL() {
 			cursor.update(cursor => cursor.x = anchors.EOL);
