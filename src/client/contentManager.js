@@ -8,6 +8,11 @@ import { draw } from './screen';
 export default function ContentManager(window, client) {
 	const changes = [];
 	return {
+		/**
+		 * Processes a diff from the client.
+		 *
+		 * This is guaranteed to update the local buffer synchronously.
+		 */
 		processClientDiff(diff) {
 			window.processDiff(diff);
 			const changeSet = {

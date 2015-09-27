@@ -8,6 +8,7 @@ import { isCharKey } from './motions/utils';
 import search from './motions/search';
 import movement from './motions/movement';
 import inserts from './motions/inserts';
+import clipboard from './motions/clipboard';
 
 export default function Modes({ window, contentManager }) {
 	let currentMode = 'normal';
@@ -19,23 +20,25 @@ export default function Modes({ window, contentManager }) {
 	const state = { window, changeMode, contentManager };
 	const bindings = {
 		normal : Object.assign({
-			[ctrl('c')] : () => {
-				process.exit();
+				[ctrl('c')] : () => {
+					process.exit();
+				},
+				[keys.ESCAPE] : () => {
+					clearLog();
+				},
+				':' : () => {
+					commandDispatcher.command = ':';
+					return changeMode('command');
+				},
+				default : (ch, key) => {
+					log(util.inspect(ch), key);
+				}
 			},
-			[keys.ESCAPE] : () => {
-				clearLog();
-			},
-			':' : () => {
-				commandDispatcher.command = ':';
-				return changeMode('command');
-			},
-			default : (ch, key) => {
-				log(util.inspect(ch), key);
-			}
-		},
-		inserts(state),
-		movement(state),
-		search(state)),
+			inserts(state),
+			movement(state),
+			search(state),
+			clipboard(state)
+		),
 		command : {
 			[keys.ESCAPE] : () => {
 				commandDispatcher.command = '';
