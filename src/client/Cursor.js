@@ -90,7 +90,11 @@ export default function createCursor(window) {
 		},
 		moveToEOL() {
 			cursor.update(cursor => cursor.x = anchors.EOL);
+		},
+		moveToStartOfLine() {
+			cursor.update(cursor => cursor.x = 0);
 		}
+
 
 	};
 	registerDrawable(buffer => {

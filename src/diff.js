@@ -13,6 +13,10 @@ export function applyDiff(input, diff) {
 
 	switch (diff.type) {
 		case diffTypes.INSERT :
+			//We'll create an empty line when text is inserted below the last line
+			if (diff.line === lines.length) {
+				lines.push('');
+			}
 			const currentLine = lines[diff.line];
 			const newText = currentLine.substr(0, diff.column) + diff.text + currentLine.substr(diff.column);
 			//The inserted text can contain newlines, so we may have to replace a single line with multiple new ones
