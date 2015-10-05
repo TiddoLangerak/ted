@@ -1,3 +1,44 @@
+export function invertDiff(diff) {
+	const inverted = {};
+	switch(diff.type) {
+		case diffTypes.INSERT:
+			inverted.type = diffTypes.DELETE;
+			inverted.from = { line : diff.line, column : diff.column };
+			const lines = diff.text.split('\n');
+			if (lines.length === 1) {
+				inverted.to = { line : diff.line, column : diff.column + lines[0].length };
+			} else {
+				inverted.to = {
+					line : diff.line + lines.length - 1,
+					column : lines[lines.length - 1].length
+				};
+			}
+			inverted.text = diff.text;
+			break;
+		case diffTypes.DELETE :
+			inverted.type = diffTypes.INSERT;
+			inverted.line = diff.from.line;
+			inverted.column = diff.from.column;
+			inverted.text = diff.text;
+			break;
+		default :
+			throw new Error('Unkown diff type');
+	}
+	return inverted;
+}
+
+export function extractText(lines, from, to) {
+	//First get the relevant lines
+	const range = lines.slice(from.line, to.line + 1);
+	//then slice of the unecessary columns from the beginning and the end
+	//Note that we first process the end: doing so keeps the index for the beginning unchanged,
+	//even if `from` and `to` are on the same line. (If we were to cut of the beginning first we
+	//would have to update the to column if it was on the same line as from.)
+	range[range.length - 1] = range[range.length - 1].substr(0, to.column);
+	range[0] = range[0].substr(from.column);
+	return range.join('\n');
+}
+
 /**
  * Apply a diff to some text.
  *
@@ -26,8 +67,13 @@ export function applyDiff(input, diff) {
 		case diffTypes.DELETE :
 			const from = diff.from;
 			const to = diff.to;
+			//First check if the text we're about to remove corresponds with the text given in the diff
+			const toRemove = extractText(lines, from, to);
+			if (toRemove !== diff.text) {
+				throw new Error(`Text to remove does not match actual text. To remove: '${diff.text}' actual: '${toRemove}'`);
+			}
 			//We are replacing all affected lines in the deletion with one new line. The newline is
-			//the "prefix" of the start line + the "postfix" of the end-line, i.e. the parts of
+			//the 'prefix' of the start line + the 'postfix' of the end-line, i.e. the parts of
 			//the lines in the range that we need to keep.
 			const newLine = lines[from.line].substr(0, from.column) + lines[to.line].substr(to.column);
 			const linesToReplace = diff.to.line - diff.from.line + 1;

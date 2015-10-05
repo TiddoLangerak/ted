@@ -1,6 +1,7 @@
 import fs from 'fs';
 import promisify from '../promisify';
-import { applyDiff } from '../diff';
+import { applyDiff, invertDiff } from '../diff';
+import { inspect } from 'util';
 
 /**
  * Wrapper around fs.access to make it work properly with promises
@@ -18,10 +19,20 @@ async function checkAccess(filePath, mode = fs.F_OK) {
 
 const Buffer = {
 	applyDiff(diff) {
+		this.history.push(diff);
 		this.content = applyDiff(this.content, diff);
 	},
 	isDirty() {
 		return this.content !== this.originalContent;
+	},
+	undo() {
+		if (this.history.length) {
+			const diff = invertDiff(this.history.pop());
+			this.content = applyDiff(this.content, diff);
+			return diff;
+		} else {
+			return null;
+		}
 	}
 };
 
@@ -45,7 +56,7 @@ const FileBuffer = Object.assign(Object.create(Buffer), {
 });
 
 function newFileBuffer(filePath, content = '', readonly = false) {
-	return Object.assign(Object.create(FileBuffer), { filePath, content, readonly, originalContent : content });
+	return Object.assign(Object.create(FileBuffer), { filePath, content, readonly, originalContent : content, history : [] });
 }
 
 export async function createFileBuffer(filePath) {

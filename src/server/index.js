@@ -19,7 +19,7 @@ const server = net.createServer((client) => {
 		switch (message.type) {
 			case messageTypes.RPC:
 				try {
-					await rpc[message.action](client, message.arguments);
+					await rpc[message.action](client, message.arguments, { clients });
 				} catch (e) {
 					console.error('RPC action failed: ', e);
 					sendMessage(client, { type : messageTypes.ERROR, message : e.message });

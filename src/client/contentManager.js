@@ -44,6 +44,13 @@ export default function ContentManager(window, client) {
 				action : 'saveFile',
 				arguments : { file : window.file, force }
 			});
+		},
+		undo() {
+			sendMessage(client, {
+				type : messageTypes.RPC,
+				action : 'undo',
+				arguments : { file : window.file }
+			});
 		}
 	};
 }

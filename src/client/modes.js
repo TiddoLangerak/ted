@@ -26,6 +26,9 @@ export default function Modes({ window, contentManager }) {
 				[keys.ESCAPE] : () => {
 					clearLog();
 				},
+				'u' : () => {
+					contentManager.undo();
+				},
 				':' : () => {
 					commandDispatcher.command = ':';
 					return changeMode('command');
@@ -87,7 +90,8 @@ export default function Modes({ window, contentManager }) {
 				}
 				const diff = {
 					type : diffTypes.DELETE,
-					from, to
+					from, to,
+					text: window.getText(from, to)
 				};
 				contentManager.processClientDiff(diff);
 			},

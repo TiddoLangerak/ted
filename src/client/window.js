@@ -1,6 +1,6 @@
 import { draw, registerDrawable, drawPriorities } from './screen';
 import { fillLine } from './screenBufferUtils';
-import { applyDiff, diffTypes } from '../diff';
+import { applyDiff, diffTypes, extractText } from '../diff';
 import createCursor from './Cursor';
 
 const Window = {};
@@ -25,6 +25,9 @@ export default function (content = '') {
 			}
 		}
 	});
+	window.getText = (from, to) => {
+		return extractText(lines, from, to);
+	};
 	window.cursor = createCursor(window);
 	window.lineLength = (line) => {
 		if (lines.length < line) {
