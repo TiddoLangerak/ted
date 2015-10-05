@@ -29,6 +29,9 @@ export default function Modes({ window, contentManager }) {
 				'u' : () => {
 					contentManager.undo();
 				},
+				[ctrl('r')] : () => {
+					contentManager.redo();
+				},
 				':' : () => {
 					commandDispatcher.command = ':';
 					return changeMode('command');

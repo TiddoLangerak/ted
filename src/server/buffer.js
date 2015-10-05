@@ -20,6 +20,7 @@ async function checkAccess(filePath, mode = fs.F_OK) {
 const Buffer = {
 	applyDiff(diff) {
 		this.history.push(diff);
+		this.future = [];
 		this.content = applyDiff(this.content, diff);
 	},
 	isDirty() {
@@ -27,8 +28,20 @@ const Buffer = {
 	},
 	undo() {
 		if (this.history.length) {
-			const diff = invertDiff(this.history.pop());
+			const originalDiff = this.history.pop();
+			const diff = invertDiff(originalDiff);
 			this.content = applyDiff(this.content, diff);
+			this.future.unshift(originalDiff);
+			return diff;
+		} else {
+			return null;
+		}
+	},
+	redo() {
+		if (this.future.length) {
+			const diff = this.future.shift();
+			this.content = applyDiff(this.content, diff);
+			this.history.push(diff);
 			return diff;
 		} else {
 			return null;
@@ -56,7 +69,7 @@ const FileBuffer = Object.assign(Object.create(Buffer), {
 });
 
 function newFileBuffer(filePath, content = '', readonly = false) {
-	return Object.assign(Object.create(FileBuffer), { filePath, content, readonly, originalContent : content, history : [] });
+	return Object.assign(Object.create(FileBuffer), { filePath, content, readonly, originalContent : content, history : [], future : [] });
 }
 
 export async function createFileBuffer(filePath) {

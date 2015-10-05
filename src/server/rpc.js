@@ -29,5 +29,19 @@ export default {
 			};
 			clients.forEach(client => sendMessage(client, message));
 		}
+	},
+	async redo(client, { file }, { clients }) {
+		const buffer = await getBuffer(file);
+		const diff = buffer.redo();
+		if (diff) {
+			const message = {
+				type : messageTypes.DIFF,
+				file,
+				diff,
+				isDirty: buffer.isDirty,
+				uuid: uuid.v1()
+			};
+			clients.forEach(client => sendMessage(client, message));
+		}
 	}
 };
