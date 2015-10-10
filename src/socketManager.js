@@ -1,5 +1,38 @@
-import path from 'path';
+import fs from 'fs';
+import { SOCKET_PATH } from './paths';
+import net from 'net';
+import promisify from './promisify';
 
-export function getSocketPath() {
-	return path.join(process.cwd(), '_editor.sock');
+export async function socketExists() {
+	return await new Promise(resolve => fs.access(SOCKET_PATH, fs.F_OK, err => resolve(!err)));
+}
+
+export async function socketIsActive() {
+	const exists = await socketExists();
+	if (!exists) {
+		return false;
+	}
+	return await new Promise((resolve, reject) => {
+		const client = net.connect({ path : SOCKET_PATH }, () => {
+			client.end();
+			resolve(true);
+		});
+		client.on('error', (err) => {
+			//We'll get ECONNREFUSED when the socket file exists, but isn't active.
+			//In that case we want to resolve with false.
+			//If we get any other error then something is wrong and we need to bail.
+			if (err.code === 'ECONNREFUSED') {
+				resolve(false);
+			} else {
+				reject(err);
+			}
+		});
+	});
+}
+
+export async function cleanInactiveSocket() {
+	if (!(await socketIsActive()) && await socketExists()) {
+		return await promisify(cb => fs.unlink(SOCKET_PATH, cb));
+	}
+	return;
 }
