@@ -50,6 +50,8 @@ export function writeIntoBuffer(src, target) {
 	//Make sure we don't overflow the target
 	src = src.slice(0, target.length);
 	src.forEach((line, lineIdx) => {
+		//Again, prevent overflowing
+		line = line.slice(0, target[lineIdx].length);
 		line.forEach((cell, colIdx) => {
 			target[lineIdx][colIdx] = cell;
 		});

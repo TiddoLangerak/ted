@@ -1,4 +1,4 @@
-import { draw } from './screen';
+import { draw, registerDrawable } from './screen';
 import styles from 'ansi-styles';
 
 export const anchors = {
@@ -93,15 +93,16 @@ export default function createCursor(window) {
 		},
 		moveToStartOfLine() {
 			cursor.update(cursor => cursor.x = 0);
-		},
-		draw(buffer) {
-			const cursorPos = getScreenCoordinates(window, cursor);
-			//We need to copy the modifiers since it may be shared with other characters
-			const mods = new Set(buffer[cursorPos.row][cursorPos.column].modifiers);
-			mods.add(styles.bgWhite);
-			mods.add(styles.black);
-			buffer[cursorPos.row][cursorPos.column].modifiers = mods;
 		}
 	};
+
+	registerDrawable('CURSOR', buffer => {
+		const cursorPos = getScreenCoordinates(window, cursor);
+		//We need to copy the modifiers since it may be shared with other characters
+		const mods = new Set(buffer[cursorPos.row][cursorPos.column].modifiers);
+		mods.add(styles.bgWhite);
+		mods.add(styles.black);
+		buffer[cursorPos.row][cursorPos.column].modifiers = mods;
+	});
 	return cursor;
 }

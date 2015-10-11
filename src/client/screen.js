@@ -3,7 +3,7 @@ import layout from './screenLayout';
 
 //This will be used to keep track of what is already drawn on screen
 let currentRows = [];
-function drawBuffer(buffer) {
+function drawBuffer(buffer, forceRedraw = false) {
 	const rows = [];
 	buffer.forEach((row, idx) => {
 		const rowTokens = [
@@ -29,9 +29,13 @@ function drawBuffer(buffer) {
 		const closeMods = Array.from(modifiers).map(mod => mod.close).join('');
 		rows.push(tokenString + closeMods);
 	});
-	let tokenString = rows.filter((row, idx) =>
-		currentRows.length < idx || currentRows[idx] !== row
-	).join('\n');
+	const tokenString = rows
+		.filter((row, idx) =>
+			//We only draw rows that have actually been changed, unless an explicit forceRedraw has
+			//been requested
+			forceRedraw || currentRows.length < idx || currentRows[idx] !== row
+		)
+		.join('\n');
 	process.stdout.write(tokenString);
 	currentRows = rows;
 }
@@ -54,7 +58,8 @@ function initialize() {
 		closeAlternateBuffer();
 	});
 
-	process.on('SIGWINCH', () => draw());
+	//We force redraw on sigwinch, to prevent glitches
+	process.on('SIGWINCH', () => draw(false, true));
 
 	return { registerDrawable, draw };
 }
@@ -131,12 +136,20 @@ function drawLayers(layers, buffer) {
 	});
 }
 
-export function draw(immediate) {
+/**
+ * @param {Boolean} [immediate] - If true the screen will be drawed immediately. By default the
+ *                                screen is updated in the next tick, both for performance and to
+ *                                allow temporary invalid states.
+ * @param {Boolean} [forceRedraw] - If true the entire screen wil be redrawn. By default only the
+ *                                  lines that have been changed will be redrawn, but this may result
+ *                                  in glitches when the screen is resized.
+ */
+export function draw(immediate = false, forceRedraw = false) {
 	//If we don't need to draw immediately we'll schedule the drawing for the next tick.
 	//The main reason for this is to allow the buffers to temporarily be in an invalid state.
 	//As long as the invalid state is fixed before the next tick then drawing won't fail.
 	if (!immediate) {
-		process.nextTick(() => draw(true));
+		process.nextTick(() => draw(true, forceRedraw));
 		return;
 	}
 	if (!isInitialized) {
@@ -154,6 +167,6 @@ export function draw(immediate) {
 		});
 	});
 	drawLayers(layout, buffer);
-	drawBuffer(buffer);
+	drawBuffer(buffer, forceRedraw);
 }
 

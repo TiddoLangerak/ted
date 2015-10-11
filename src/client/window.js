@@ -111,10 +111,9 @@ export default function (content = '') {
 	}
 
 
-	registerDrawable('EDITOR', buffer => {
+	registerDrawable('CONTENT', buffer => {
 		lines.slice(window.bufferOffset, window.bufferOffset + buffer.length)
 			.forEach((line, idx) => fillLine(buffer[idx], normalizeText(line)));
-		window.cursor.draw(buffer);
 	});
 
 	return window;

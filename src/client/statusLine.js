@@ -12,23 +12,29 @@ export default function createStatusLine({ modes, window }) {
 		fillerModifiers : statusLineModifiers
 	};
 	registerDrawable('STATUS_LINE', buffer => {
-		const statusLine = [
+		let leftSegment = [
 			...createSegment(modes.getCurrentModeName().toUpperCase(), modeMods),
 			...createSegment(' | ', statusLineMods)
 		];
-		const fileNameSpace = Math.max(0, buffer[0].length - statusLine.length);
+		let rightSegment = createSegment(`${window.cursor.y}:${window.cursor.x}`, statusLineMods);
+
+		const fileNameSpace = Math.max(0, buffer[0].length - leftSegment.length - rightSegment.length);
 		const fileName = window.file || '';
 		//We provide the second argument as well such that when fileNameSpace === 0 we get the empty string
 		const visibleFileName = fileName.substr(-fileNameSpace, fileNameSpace);
 
-		const fileNameOpts = {
-			modifiers : new Set(statusLineOpts.modifiers),
-			fillerModifiers : statusLineOpts.fillerModifiers
-		};
+		const fileNameMods = new Set(statusLineOpts.modifiers);
 		if (window.isDirty) {
-			fileNameOpts.modifiers.add(styles.red);
+			fileNameMods.add(styles.red);
 		}
-		const fileNameSegment = fixedLength(visibleFileName, fileNameSpace, fileNameOpts);
-		writeIntoBuffer([[...statusLine, ...fileNameSegment]], buffer);
+		const fileNameSegment = createSegment(visibleFileName, fileNameMods);
+		leftSegment = [...leftSegment, ...fileNameSegment];
+
+		const fillerLength = Math.max(0, buffer[0].length - leftSegment.length - rightSegment.length);
+		const filler = fixedLength('', fillerLength, statusLineOpts);
+
+		const statusLine = [...leftSegment, ...filler, ...rightSegment];
+
+		writeIntoBuffer([statusLine], buffer);
 	});
 }
