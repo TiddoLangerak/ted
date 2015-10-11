@@ -1,5 +1,6 @@
 import escapes from 'ansi-escapes';
 import layout from './screenLayout';
+import { ttyOut } from './stdio';
 
 //This will be used to keep track of what is already drawn on screen
 let currentRows = [];
@@ -36,18 +37,18 @@ function drawBuffer(buffer, forceRedraw = false) {
 			forceRedraw || currentRows.length < idx || currentRows[idx] !== row
 		)
 		.join('\n');
-	process.stdout.write(tokenString);
+	ttyOut.write(tokenString);
 	currentRows = rows;
 }
 
-function startAlternateBuffer() {
-	process.stdout.write('\x1b[?1049h');
-	process.stdout.write(escapes.cursorHide);
+export function startAlternateBuffer() {
+	ttyOut.write('\x1b[?1049h');
+	ttyOut.write(escapes.cursorHide);
 }
 
-function closeAlternateBuffer() {
-	process.stdout.write('\x1b[?1049l');
-	process.stdout.write(escapes.cursorShow);
+export function closeAlternateBuffer() {
+	ttyOut.write('\x1b[?1049l');
+	ttyOut.write(escapes.cursorShow);
 }
 
 function initialize() {
@@ -56,6 +57,12 @@ function initialize() {
 
 	process.on('exit', () => {
 		closeAlternateBuffer();
+	});
+	process.on('uncaughtException', (e) => {
+		closeAlternateBuffer();
+		setTimeout(() => {
+			throw e;
+		});
 	});
 
 	//We force redraw on sigwinch, to prevent glitches
@@ -161,8 +168,8 @@ export function draw(immediate = false, forceRedraw = false) {
 	//some virtual screen in memory (e.g. an array of lines, or a matrix).
 	//The screen class should then do the actual drawing.
 
-	const buffer = Array.from(new Array(process.stdout.rows), () => {
-		return Array.from(new Array(process.stdout.columns), () => {
+	const buffer = Array.from(new Array(ttyOut.rows), () => {
+		return Array.from(new Array(ttyOut.columns), () => {
 			return { ch : ' ', modifiers : new Set() };
 		});
 	});

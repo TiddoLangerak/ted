@@ -1,5 +1,6 @@
 import { draw, registerDrawable } from './screen';
 import styles from 'ansi-styles';
+import { stdout } from './stdio';
 
 export const anchors = {
 	EOL : '$'
@@ -64,7 +65,7 @@ export default function createCursor(window) {
 			}
 
 			//TODO: get this from somewhere
-			const windowHeight = process.stdout.rows - 2;
+			const windowHeight = stdout.rows - 2;
 			//Scroll
 			if (cursor.y - window.bufferOffset >= windowHeight - window.cursorPadding) {
 				window.bufferOffset = cursor.y - windowHeight + window.cursorPadding + 1;
@@ -75,6 +76,12 @@ export default function createCursor(window) {
 		},
 		isAt(point) {
 			return x === point;
+		},
+		moveTo(y, x) {
+			cursor.update(cursor => {
+				cursor.x = x;
+				cursor.y = y;
+			});
 		},
 		moveLeft(amount = 1) {
 			cursor.update(cursor => cursor.x -= amount);

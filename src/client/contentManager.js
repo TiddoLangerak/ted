@@ -8,6 +8,9 @@ import { draw } from './screen';
 export default function ContentManager(window, client) {
 	const changes = [];
 	return {
+		changeFile(file) {
+			sendMessage(client, { type : messageTypes.RPC, action : 'requestFile', arguments : { file } });
+		},
 		/**
 		 * Processes a diff from the client.
 		 *

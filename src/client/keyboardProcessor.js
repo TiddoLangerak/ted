@@ -1,4 +1,5 @@
 import keypress from 'keypress';
+import { stdin } from './stdio';
 
 
 /**
@@ -45,7 +46,6 @@ export const keys = {
  * An action may return a new set of bindings which will replace the current set of bindings
  */
 export default function start(bindings) {
-	keypress(process.stdin);
-	process.stdin.setRawMode(true);
-	process.stdin.on('keypress', keyProcessor(bindings));
+	keypress(stdin);
+	stdin.on('keypress', keyProcessor(bindings));
 }
