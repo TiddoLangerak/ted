@@ -9,6 +9,7 @@ import search from './motions/search';
 import movement from './motions/movement';
 import inserts from './motions/inserts';
 import clipboard from './motions/clipboard';
+import deletions from './motions/deletions';
 
 export default function Modes({ window, contentManager }) {
 	let currentMode = 'normal';
@@ -43,7 +44,8 @@ export default function Modes({ window, contentManager }) {
 			inserts(state),
 			movement(state),
 			search(state),
-			clipboard(state)
+			clipboard(state),
+			deletions(state)
 		),
 		command : {
 			[keys.ESCAPE] : () => {

@@ -65,12 +65,20 @@ export function applyDiff(input, diff) {
 			lines.splice(diff.line, 1, ...newLines);
 			break;
 		case diffTypes.DELETE :
-			const from = diff.from;
-			const to = diff.to;
+			//We copy the from and to such that we can alter them at will
+			const from = Object.assign({}, diff.from);
+			const to = Object.assign({}, diff.to);
 			//First check if the text we're about to remove corresponds with the text given in the diff
 			const toRemove = extractText(lines, from, to);
 			if (toRemove !== diff.text) {
 				throw new Error(`Text to remove does not match actual text. To remove: '${diff.text}' actual: '${toRemove}'`);
+			}
+			//When to is placed just below the last character we will wrap it back to the last column of the
+			//text. Allowing the to to be placed just beyond the content makes it much easier to write
+			//generalized code, otherwise many line based operators would need to special case last line.
+			if (to.line === lines.length && to.column === 0) {
+				to.line = lines.length - 1;
+				to.column = lines[to.line].length;
 			}
 			//We are replacing all affected lines in the deletion with one new line. The newline is
 			//the 'prefix' of the start line + the 'postfix' of the end-line, i.e. the parts of
