@@ -65,6 +65,7 @@ import mkdirp from 'mkdirp';
 			case messageTypes.BUFFER:
 				mainWindow.content = message.buffer.content;
 				mainWindow.file = message.buffer.filePath;
+				mainWindow.isDirty = message.buffer.isDirty;
 				draw();
 				break;
 			case messageTypes.DIFF:

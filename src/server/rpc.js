@@ -5,7 +5,12 @@ import uuid from 'uuid';
 export default {
 	async requestFile(client, { file }) {
 		const buffer = await getBuffer(file);
-		sendMessage(client, { type : messageTypes.BUFFER, buffer });
+		sendMessage(client, { type : messageTypes.BUFFER, buffer : {
+			filePath : buffer.filePath,
+			content  : buffer.content,
+			readOnly : buffer.readOnly,
+			isDirty  : buffer.isDirty()
+		}});
 	},
 	async saveFile(client, { file, force = false }) {
 		const buffer = await getBuffer(file);
