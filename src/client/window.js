@@ -1,4 +1,4 @@
-import { draw, registerDrawable, drawPriorities } from './screen';
+import { draw, registerDrawable } from './screen';
 import { fillLine } from './screenBufferUtils';
 import { applyDiff, diffTypes, extractText } from '../diff';
 import createCursor from './Cursor';
@@ -111,10 +111,11 @@ export default function (content = '') {
 	}
 
 
-	registerDrawable(buffer => {
+	registerDrawable('EDITOR', buffer => {
 		lines.slice(window.bufferOffset, window.bufferOffset + buffer.length)
 			.forEach((line, idx) => fillLine(buffer[idx], normalizeText(line)));
-	}, drawPriorities.CONTENT);
+		window.cursor.draw(buffer);
+	});
 
 	return window;
 }

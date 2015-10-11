@@ -1,4 +1,5 @@
 import escapes from 'ansi-escapes';
+import layout from './screenLayout';
 
 //This will be used to keep track of what is already drawn on screen
 let currentRows = [];
@@ -53,35 +54,87 @@ function initialize() {
 		closeAlternateBuffer();
 	});
 
-	//The information about columns/rows isn't processed yet when this signal fires,
-	//so we delay until next tick
-	process.on('SIGWINCH', () => process.nextTick(draw));
+	process.on('SIGWINCH', () => draw());
 
 	return { registerDrawable, draw };
 }
 
+const drawables = new Map();
 
-export const drawPriorities = {
-	CONTENT : 0,
-	CURSOR: 100,
-	STATUS_LINE : 1000,
-	COMMAND_LINE : 1000,
-	LOG : 10000
-};
-
-const drawables = [];
-
-export function registerDrawable(drawFunction, priority = 0) {
-	drawables.push({ draw: drawFunction, priority });
-	drawables.sort((a, b) => a.priority - b.priority); //highest prio last, such that it'll override the rest
+export function registerDrawable(name, drawFunction) {
+	drawables.set(name, drawFunction);
 }
 
 let isInitialized = false;
 
+function drawLayers(layers, buffer) {
+	layers.forEach(layer => {
+		if (typeof layer === 'string') {
+			const drawable = drawables.get(layer);
+			drawable(buffer);
+		} else { //split window
+			let sizeField;
+			//Size of the layer in the relevant dimension. I.e. for a vertical split this is the height,
+			//for a horizontal split this is the width;
+			let layerSize;
+			if (layer.split === 'vertical') {
+				sizeField = 'height';
+				layerSize = buffer.length;
+			} else if (layer.split === 'horizontal') {
+				sizeField = 'width';
+				layerSize = buffer[0].length;
+			} else {
+				throw new Error(`Split type must be either 'vertical' or 'horizontal', but '${layer.split}' was found`);
+			}
+
+			//Number of buffers that have an auto height
+			const autoCount = layer.buffers.filter(buff => buff[sizeField] === 'auto').length;
+			//Size already claimed by fixed size parts
+			const claimedSize = layer.buffers
+				.filter(buff => Number.isFinite(buff[sizeField]))
+				.reduce((size, buff) => size + buff[sizeField], 0);
+			const autoSize = Math.floor((layerSize - claimedSize) / autoCount);
+
+			//We need to also keep track of the remainder to prevent empty rows when multiple auto's are given.
+			let autoSizeRemainder = (layerSize - claimedSize) % autoCount;
+
+			//We reduce the buffers onto the screen buffers in such a way that each buffer draws onto
+			//it's claimed space and then passes the *remainder* of the buffer to the next iteration.
+			//This should result in an empty screen buffer when we're done.
+			layer.buffers
+				.reduce((screenBuffer, buff) => {
+					let size = buff[sizeField];
+					if (size === 'auto') {
+						size = autoSize;
+						if (autoSizeRemainder) {
+							size++;
+							autoSizeRemainder--;
+						}
+					}
+
+					if (layer.split === 'vertical') {
+						const virtualBuffer = screenBuffer.slice(0, size);
+						drawLayers(buff.layers, virtualBuffer);
+						return screenBuffer.slice(size);
+					} else { //layer.split === 'horizontal'
+						let left = [];
+						let right = [];
+						screenBuffer.forEach(line => {
+							left.push(line.slice(0, size));
+							right.push(line.slice(size));
+						});
+						drawLayers(buff.layers, left);
+						return right;
+					}
+				}, buffer);
+		}
+	});
+}
+
 export function draw(immediate) {
 	//If we don't need to draw immediately we'll schedule the drawing for the next tick.
 	//The main reason for this is to allow the buffers to temporarily be in an invalid state.
-	//As long the invalid state is fixed before the next tick then drawing won't fail.
+	//As long as the invalid state is fixed before the next tick then drawing won't fail.
 	if (!immediate) {
 		process.nextTick(() => draw(true));
 		return;
@@ -100,7 +153,7 @@ export function draw(immediate) {
 			return { ch : ' ', modifiers : new Set() };
 		});
 	});
-	drawables.forEach((drawable) => drawable.draw(buffer));
+	drawLayers(layout, buffer);
 	drawBuffer(buffer);
 }
 

@@ -1,6 +1,6 @@
 import styles from 'ansi-styles';
-import { registerDrawable, drawPriorities } from './screen';
-import { createSegment, fixedLength } from './screenBufferUtils';
+import { registerDrawable } from './screen';
+import { createSegment, fixedLength, writeIntoBuffer } from './screenBufferUtils';
 
 export default function createStatusLine({ modes, window }) {
 	const statusLineBg = styles.bgBlue;
@@ -11,14 +11,15 @@ export default function createStatusLine({ modes, window }) {
 		modifiers : statusLineModifiers,
 		fillerModifiers : statusLineModifiers
 	};
-	registerDrawable(buffer => {
+	registerDrawable('STATUS_LINE', buffer => {
 		const statusLine = [
 			...createSegment(modes.getCurrentModeName().toUpperCase(), modeMods),
 			...createSegment(' | ', statusLineMods)
 		];
-		const fileNameSpace = buffer[buffer.length - 2].length - statusLine.length;
+		const fileNameSpace = Math.max(0, buffer[0].length - statusLine.length);
 		const fileName = window.file || '';
-		const visibleFileName = fileName.substr(-fileNameSpace);
+		//We provide the second argument as well such that when fileNameSpace === 0 we get the empty string
+		const visibleFileName = fileName.substr(-fileNameSpace, fileNameSpace);
 
 		const fileNameOpts = {
 			modifiers : new Set(statusLineOpts.modifiers),
@@ -28,6 +29,6 @@ export default function createStatusLine({ modes, window }) {
 			fileNameOpts.modifiers.add(styles.red);
 		}
 		const fileNameSegment = fixedLength(visibleFileName, fileNameSpace, fileNameOpts);
-		buffer[buffer.length - 2] = [...statusLine, ...fileNameSegment];
-	}, drawPriorities.STATUS_LINE);
+		writeIntoBuffer([[...statusLine, ...fileNameSegment]], buffer);
+	});
 }

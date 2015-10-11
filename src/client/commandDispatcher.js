@@ -1,4 +1,4 @@
-import { registerDrawable, drawPriorities } from './screen.js';
+import { registerDrawable } from './screen.js';
 import { error } from './screenLogger';
 import { fillLine } from './screenBufferUtils';
 
@@ -19,8 +19,8 @@ const commandDispatcher = {
 	}
 };
 
-registerDrawable(buffer => {
-	fillLine(buffer[buffer.length - 1], commandDispatcher.command);
-}, drawPriorities.COMMAND_LINE);
+registerDrawable('COMMAND_LINE', buffer => {
+	fillLine(buffer[0], commandDispatcher.command);
+});
 
 export default commandDispatcher;

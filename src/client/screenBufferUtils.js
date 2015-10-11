@@ -39,3 +39,19 @@ export function createSegment(text, modifiers = new Set()) {
 			return { ch, modifiers };
 		});
 }
+
+/**
+ * Copies the content of one buffer into another one.
+ *
+ * The main goal for this function is to allow drawables to construct buffers from scratch, and then
+ * write the buffers into the passed in buffer.
+ */
+export function writeIntoBuffer(src, target) {
+	//Make sure we don't overflow the target
+	src = src.slice(0, target.length);
+	src.forEach((line, lineIdx) => {
+		line.forEach((cell, colIdx) => {
+			target[lineIdx][colIdx] = cell;
+		});
+	});
+}
