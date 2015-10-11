@@ -10,8 +10,7 @@ import movement from './motions/movement';
 import inserts from './motions/inserts';
 import clipboard from './motions/clipboard';
 import deletions from './motions/deletions';
-import path from 'path';
-import subScreen from './subScreen';
+import fuzzyFileSearch from './motions/fuzzyFileSearch';
 
 export default function Modes({ window, contentManager }) {
 	let currentMode = 'normal';
@@ -41,29 +40,14 @@ export default function Modes({ window, contentManager }) {
 				},
 				default : (ch, key) => {
 					log(util.inspect(ch), key);
-				},
-				[ctrl('p')] : () => {
-					const child = subScreen('fzf', [], {
-						cwd : process.cwd(),
-						//We allow stderr to be used to draw on, and we assume stdout will be used to place
-						//the result in
-						stdio : [process.stdin, 'pipe', process.stderr]
-					});
-					let file = '';
-					child.stdout.on('data', data => file += data);
-					child.on('close', () => {
-						if (file.trim()) {
-							file = path.resolve(process.cwd(), file.trim());
-							contentManager.changeFile(file);
-						}
-					});
 				}
 			},
 			inserts(state),
 			movement(state),
 			search(state),
 			clipboard(state),
-			deletions(state)
+			deletions(state),
+			fuzzyFileSearch(state)
 		),
 		command : {
 			[keys.ESCAPE] : () => {

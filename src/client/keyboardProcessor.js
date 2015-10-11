@@ -1,7 +1,6 @@
 import keypress from 'keypress';
 import { stdin } from './stdio';
 
-
 /**
  * Returns a ctrl+<char> unicode value for a given <char>
  *
@@ -16,11 +15,21 @@ export function ctrl(c) {
 	return String.fromCharCode(charNum + 1);
 }
 
+/**
+ * Returns a alt+<char> unicode value for a given <char>
+ *
+ * This does NOT compose with other functions.
+ */
+export function alt(c) {
+	return '\u001b' + c;
+}
+
 function keyProcessor(bindings) {
 	return (ch, key) => {
+		const target = key ? key.sequence : ch;
 		let newBindings;
-		if (bindings[ch]) {
-			newBindings = bindings[ch](ch, key);
+		if (bindings[target]) {
+			newBindings = bindings[target](ch, key);
 		} else if (bindings.default) {
 			newBindings = bindings.default(ch, key);
 		}

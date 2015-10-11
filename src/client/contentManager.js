@@ -1,6 +1,7 @@
 import { sendMessage, messageTypes } from '../protocol.js';
 import uuid from 'uuid';
 import { draw } from './screen';
+import path from 'path';
 
 /**
  * Manages synchronization of content with the server
@@ -9,6 +10,7 @@ export default function ContentManager(window, client) {
 	const changes = [];
 	return {
 		changeFile(file) {
+			file = path.resolve(process.cwd(), file.trim());
 			sendMessage(client, { type : messageTypes.RPC, action : 'requestFile', arguments : { file } });
 		},
 		/**

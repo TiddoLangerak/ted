@@ -60,9 +60,7 @@ function initialize() {
 	});
 	process.on('uncaughtException', (e) => {
 		closeAlternateBuffer();
-		setTimeout(() => {
-			throw e;
-		});
+		throw e;
 	});
 
 	//We force redraw on sigwinch, to prevent glitches
