@@ -24,15 +24,21 @@ export function alt(c) {
 	return '\u001b' + c;
 }
 
+/**
+ * Processes a key event for a given bindings object
+ */
+export function processKey(bindings, ch, key) {
+	const target = key ? key.sequence : ch;
+	if (bindings[target]) {
+		return bindings[target](ch, key);
+	} else if (bindings.default) {
+		return bindings.default(ch, key);
+	}
+}
+
 function keyProcessor(bindings) {
 	return (ch, key) => {
-		const target = key ? key.sequence : ch;
-		let newBindings;
-		if (bindings[target]) {
-			newBindings = bindings[target](ch, key);
-		} else if (bindings.default) {
-			newBindings = bindings.default(ch, key);
-		}
+		const newBindings = processKey(bindings, ch, key);
 		if (newBindings) {
 			bindings = newBindings;
 		}
