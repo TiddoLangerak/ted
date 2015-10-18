@@ -23,6 +23,11 @@ export default function (content = '') {
 			get() {
 				return Array.of(...lines);
 			}
+		},
+		currentLine : {
+			get() {
+				return lines[window.cursor.y];
+			}
 		}
 	});
 	window.getText = (from, to) => {
