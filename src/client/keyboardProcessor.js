@@ -1,5 +1,6 @@
 import keypress from 'keypress';
 import { stdin } from './stdio';
+import { log } from './screenLogger';
 
 /**
  * Returns a ctrl+<char> unicode value for a given <char>
@@ -24,6 +25,8 @@ export function alt(c) {
 	return '\u001b' + c;
 }
 
+export const other = Symbol();
+
 /**
  * Processes a key event for a given bindings object
  */
@@ -31,10 +34,11 @@ export function processKey(bindings, ch, key) {
 	const target = key ? key.sequence : ch;
 	if (bindings[target]) {
 		return bindings[target](ch, key);
-	} else if (bindings.default) {
-		return bindings.default(ch, key);
+	} else if (bindings[other]) {
+		return bindings[other](ch, key);
 	}
 }
+
 
 function keyProcessor(bindings) {
 	return (ch, key) => {

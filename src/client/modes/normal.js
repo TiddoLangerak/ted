@@ -6,7 +6,7 @@ import deletions from '../motions/deletions';
 import fuzzyFileSearch from '../motions/fuzzyFileSearch';
 import { log, clearLog } from '../screenLogger';
 import commandDispatcher from '../commandDispatcher';
-import { ctrl, keys } from '../keyboardProcessor';
+import { ctrl, keys, other } from '../keyboardProcessor';
 import util from 'util';
 
 export default (state) => {
@@ -28,7 +28,7 @@ export default (state) => {
 				commandDispatcher.command = ':';
 				return changeMode('command');
 			},
-			default : (ch, key) => {
+			[other] : (ch, key) => {
 				log(util.inspect(ch), key);
 			}
 		},

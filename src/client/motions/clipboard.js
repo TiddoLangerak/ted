@@ -3,7 +3,7 @@ import { copy, paste } from 'copy-paste';
 import promisify from '../../promisify';
 
 
-export default ({ window, changeMode, contentManager }) => {
+export default ({ window, contentManager }) => {
 	async function processPaste(beforeCursor = false) {
 		let text = await promisify(cb => paste(cb));
 		if (!beforeCursor) {
@@ -51,23 +51,15 @@ export default ({ window, changeMode, contentManager }) => {
 		}
 	}
 	return {
-		'y' : () => {
-			return {
-				'y' : () => {
-					const line = window.lines[window.cursor.y];
-					copy(line + '\n');
-					return changeMode('normal');
-				}
-			};
+		'yy' : () => {
+			const line = window.lines[window.cursor.y];
+			copy(line + '\n');
 		},
 		'P' : () => {
 			processPaste(true);
-			return changeMode('normal');
 		},
 		'p' : () => {
 			processPaste();
-			return changeMode('normal');
-		},
-		default : () => changeMode('normal')
+		}
 	};
 };

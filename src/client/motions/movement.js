@@ -1,6 +1,6 @@
 import { wordCharacter, not, compilePattern, oneOf } from '../../patterns';
 
-export default ({ window, changeMode }) => {
+export default ({ window }) => {
 
 	/**
 	 * Jump over a match.
@@ -42,13 +42,7 @@ export default ({ window, changeMode }) => {
 		'k' : () => window.cursor.moveUp(),
 		'$' : window.cursor.moveToEOL,
 		'G' : () => window.cursor.update(cursor => cursor.y = window.lines.length -1),
-		'g' : () => ({
-			'g' : () => {
-				window.cursor.update(cursor => cursor.y = 0);
-				return changeMode('normal');
-			},
-			default: () => changeMode('normal')
-		}),
+		'gg' : () => window.cursor.update(cursor => cursor.y = 0),
 		'0' : () => window.cursor.moveTo(window.cursor.y, 0),
 		'^' : () => {
 			const nonSpaceMatch = /\S/.exec(window.currentLine);

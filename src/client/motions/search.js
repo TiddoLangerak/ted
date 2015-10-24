@@ -1,15 +1,15 @@
+import { other } from '../keyboardProcessor';
 import { isCharKey } from './utils';
 
-export default ({ window, changeMode }) => {
+export default ({ window }) => {
 	function searchMotion(searchFunc) {
-		return () => ({
-			default : (ch, key) => {
+		return {
+			[other] : (ch, key) => {
 				if (isCharKey(ch, key)) {
 					searchFunc(ch);
 				}
-				return changeMode('normal');
 			}
-		});
+		};
 	}
 	return {
 		'f' : searchMotion(ch => {

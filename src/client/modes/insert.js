@@ -1,6 +1,6 @@
-import { keys } from './keyboardProcessor';
-import { diffTypes } from '../diff';
-import { isCharKey } from './motions/utils';
+import { keys, other } from '../keyboardProcessor';
+import { diffTypes } from '../../diff';
+import { isCharKey } from '../motions/utils';
 
 export default (state) => {
 	const { window, changeMode, contentManager } = state;
@@ -36,7 +36,7 @@ export default (state) => {
 			};
 			contentManager.processClientDiff(diff);
 		},
-		default : (ch, key) => {
+		[other] : (ch, key) => {
 			if (isCharKey(ch, key)) {
 				let text = ch;
 				//TODO: this better

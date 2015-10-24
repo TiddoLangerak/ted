@@ -6,7 +6,7 @@
   "scripts": {
     "build": "babel --optional runtime src --out-dir out",
     "watch": "npm run build -- --watch",
-    "lint": "eslint ."
+    "lint": "eslint src"
   },
   "author": "Tiddo Langerak <tiddolangerak@gmail.com> (https://github.com/TiddoLangerak/)",
   "license": "MIT",

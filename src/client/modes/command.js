@@ -1,5 +1,7 @@
 import commandDispatcher from '../commandDispatcher';
-import { draw } from './screen';
+import { draw } from '../screen';
+import { keys, other } from '../keyboardProcessor';
+import { isCharKey } from '../motions/utils';
 
 export default ({ changeMode }) => {
 	return {
@@ -16,7 +18,7 @@ export default ({ changeMode }) => {
 			commandDispatcher.command = '';
 			return changeMode('normal');
 		},
-		default : (ch, key) => {
+		[other] : (ch, key) => {
 			if (isCharKey(ch, key)) {
 				commandDispatcher.command += ch;
 				draw();
