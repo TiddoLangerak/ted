@@ -35,7 +35,7 @@ export default function (content = '') {
 	};
 	window.cursor = createCursor(window);
 	window.lineLength = (line) => {
-		if (lines.length < line) {
+		if (lines.length <= line) {
 			return 0;
 		} else {
 			return lines[line].length;
@@ -63,35 +63,45 @@ export default function (content = '') {
 	}
 
 	window.processDiff = (diff) => {
-		applyDiff(lines, diff);
+		//We can't update the cursor position directly. Doing so might move the cursor to a position that
+		//does not yet exists, or update anchors incorrectly. Likewise, we can't apply the diff first either.
+		//Doing so makes it hard to do certain checks in cursor updates (e.g. pointInRange will fail
+		//when the cursor is at an anchor position).
+		//To get around this we first determine where we want to move the cursor to after the update.
+		//Then we can apply the update safely, and lastly we can update the cursor.
+		const newCursorPos = { x : window.cursor.x, y : window.cursor.y };
 		switch(diff.type) {
 			case diffTypes.DELETE:
 				if (pointInRange({ x : diff.from.column, y : diff.from.line },
 												 { x : diff.to.column, y : diff.to.line },
 												 window.cursor)) {
-					window.cursor.update(cursor => {
-						cursor.x = diff.from.column;
-						cursor.y = diff.from.line;
-					});
+					newCursorPos.x = diff.from.column;
+					newCursorPos.y = diff.from.line;
+				} else if (diff.to.line < window.cursor.y) {
+					newCursorPos.y -= (diff.to.line - diff.from.line);
+				} else if (diff.to.line === window.cursor.y && diff.to.column < window.cursor.x) {
+					if (diff.to.line === diff.from.line) {
+						newCursorPos.x -= (diff.to.column - diff.from.column) ;
+					} else {
+						newCursorPos.x -= diff.to.column;
+					}
 				}
 				break;
 			case diffTypes.INSERT:
 				if (diff.line === window.cursor.y && diff.column <= window.cursor.x) {
-					window.cursor.update(cursor => {
-						const newLines = diff.text.split('\n');
-						cursor.y += newLines.length - 1;
-						if (newLines.length > 1) {
-							cursor.x = 0;
-						}
-						cursor.x += newLines.pop().length;
-					});
+					const newLines = diff.text.split('\n');
+					newCursorPos.y += newLines.length - 1;
+					newCursorPos.x += newLines.pop().length;
 				} else if (diff.line < window.cursor.y) {
-					window.cursor.update(cursor => {
-						cursor.y += diff.text.split('\n').length - 1;
-					});
+					newCursorPos.y += diff.text.split('\n').length - 1;
 				}
 				break;
 		}
+		applyDiff(lines, diff);
+		window.cursor.update(cursor => {
+			cursor.y = newCursorPos.y;
+			cursor.x = newCursorPos.x;
+		});
 		draw();
 	};
 	window.tabWidth = 2;
