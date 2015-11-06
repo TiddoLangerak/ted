@@ -5,6 +5,9 @@ import search from './search';
 import movement from './movement';
 import { processKey, other } from '../keyboardProcessor';
 
+//TODO: note to self: delegation is currently broken because states need to be preprocessed
+//before they can be used. Perhaps it's therefore a good idea to do the preprocessing in the
+//keyboard processor or something.
 export default (state) => {
 	const { window, changeMode, contentManager } = state;
 	const deleteMotionDelegates = Object.assign(search(state), movement(state));
@@ -17,16 +20,13 @@ export default (state) => {
 		moveCursor();
 		let to = {
 			line : window.cursor.y,
-			column : window.cursor.x + 1
+			column : window.cursor.x
 		};
-		//If this is a backwards deletion then we need to swap to and from. Additionally we need
-		//to decrement the column of the new from character, such that the character we move to is
-		//deleted as well (but not the character under cursor)
+		//If this is a backwards deletion then we need to swap to and from.
 		if (to.line < from.line || (to.line === from.line && to.column < from.column)) {
 			const temp = to;
 			to = from;
 			from = temp;
-			from.column = Math.max(0, from.column - 1);
 		}
 		const diff = {
 			type : diffTypes.DELETE,
@@ -71,8 +71,8 @@ export default (state) => {
 			};
 			contentManager.processClientDiff(diff);
 		},
-		'dw' : delegatedDeletion(() => window.cursor.moveLeft()),
-		'dW' : delegatedDeletion(() => window.cursor.moveLeft()),
+		'de' : delegatedDeletion(() => window.cursor.moveRight()),
+		'dE' : delegatedDeletion(() => window.cursor.moveRight()),
 		[`d${keys.ESCAPE}`] : () => changeMode('normal'),
 		'd' : {
 			[other] : delegatedDeletion()
