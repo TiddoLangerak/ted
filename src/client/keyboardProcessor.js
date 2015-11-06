@@ -1,6 +1,6 @@
 import keypress from 'keypress';
 import { stdin } from './stdio';
-import { log } from './screenLogger';
+import keyBindings from './keyBindings';
 
 /**
  * Returns a ctrl+<char> unicode value for a given <char>
@@ -32,13 +32,13 @@ export const other = Symbol();
  */
 export function processKey(bindings, ch, key) {
 	const target = key ? key.sequence : ch;
-	if (bindings[target]) {
-		return bindings[target](ch, key);
-	} else if (bindings[other]) {
-		return bindings[other](ch, key);
+	const normalized = keyBindings.normalize(bindings);
+	if (normalized[target]) {
+		return normalized[target](ch, key);
+	} else if (normalized[other]) {
+		return normalized[other](ch, key);
 	}
 }
-
 
 function keyProcessor(bindings) {
 	return (ch, key) => {
