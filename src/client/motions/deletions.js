@@ -5,9 +5,6 @@ import search from './search';
 import movement from './movement';
 import { fromKeyMap } from '../modes';
 
-//TODO: note to self: delegation is currently broken because states need to be preprocessed
-//before they can be used. Perhaps it's therefore a good idea to do the preprocessing in the
-//keyboard processor or something.
 export default (state) => {
 	const { window, contentManager } = state;
 	const deleteMotionGenerator = fromKeyMap(Object.assign(
