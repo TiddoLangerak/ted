@@ -1,7 +1,6 @@
 import fs from 'fs';
 import promisify from '../promisify';
 import { applyDiff, invertDiff } from '../diff';
-import { inspect } from 'util';
 
 /**
  * Wrapper around fs.access to make it work properly with promises

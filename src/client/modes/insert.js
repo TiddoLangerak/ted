@@ -1,13 +1,14 @@
 import { keys, other } from '../keyboardProcessor';
 import { diffTypes } from '../../diff';
 import { isCharKey } from '../motions/utils';
+import { fromKeyMap, loopingMode } from '../modes';
 
-export default (state) => {
-	const { window, changeMode, contentManager } = state;
-	return {
+export default loopingMode('insert', (state, exitMode) => {
+	const { window, contentManager } = state;
+	return fromKeyMap({
 		[keys.ESCAPE] : () => {
 			window.cursor.moveLeft();
-			return changeMode('normal');
+			exitMode();
 		},
 		[keys.BACKSPACE] : () => {
 			if (window.cursor.y === 0 &&  window.cursor.x === 0) {
@@ -52,5 +53,5 @@ export default (state) => {
 				contentManager.processClientDiff(diff);
 			}
 		}
-	};
-};
+	});
+});

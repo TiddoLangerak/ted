@@ -2,6 +2,7 @@
     "parser": "babel-eslint",
     "rules": {
         "no-console" : [0],
+        "no-constant-condition" : [0],
         "quotes": [
             2,
             "single"

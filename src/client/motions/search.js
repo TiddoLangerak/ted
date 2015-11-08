@@ -17,7 +17,7 @@ export default ({ window }) => {
 				//We don't want to find the current character, so a +1 offset here
 				.substr(window.cursor.x + 1)
 				.indexOf(ch) + 1; //+1 to compensate for the +1 above
-			if (offset > 0) {
+			if (offset >= 0) {
 				window.cursor.moveRight(offset);
 			}
 		}),
@@ -25,7 +25,7 @@ export default ({ window }) => {
 			const xPos = window.lines[window.cursor.y]
 				.substr(0, window.cursor.x)
 				.lastIndexOf(ch);
-			if (xPos > 0) {
+			if (xPos >= 0) {
 				window.cursor.update(cursor => cursor.x = xPos);
 			}
 		}),

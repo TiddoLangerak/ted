@@ -1,6 +1,5 @@
 import keypress from 'keypress';
 import { stdin } from './stdio';
-import keyBindings from './keyBindings';
 
 /**
  * Returns a ctrl+<char> unicode value for a given <char>
@@ -25,27 +24,10 @@ export function alt(c) {
 	return '\u001b' + c;
 }
 
-export const other = Symbol();
-
-/**
- * Processes a key event for a given bindings object
- */
-export function processKey(bindings, ch, key) {
-	const target = key ? key.sequence : ch;
-	const normalized = keyBindings.normalize(bindings);
-	if (normalized[target]) {
-		return normalized[target](ch, key);
-	} else if (normalized[other]) {
-		return normalized[other](ch, key);
-	}
-}
-
-function keyProcessor(bindings) {
+function keyProcessor(iterator) {
+	iterator.next();
 	return (ch, key) => {
-		const newBindings = processKey(bindings, ch, key);
-		if (newBindings) {
-			bindings = newBindings;
-		}
+		iterator.next({ ch, key });
 	};
 }
 
@@ -53,6 +35,8 @@ export const keys = {
 	BACKSPACE : '\u007f',
 	ESCAPE : '\u001b'
 };
+
+export const other = Symbol('other');
 
 
 /**
@@ -64,7 +48,7 @@ export const keys = {
  *
  * An action may return a new set of bindings which will replace the current set of bindings
  */
-export default function start(bindings) {
+export default function start(keyIterator) {
 	keypress(stdin);
-	stdin.on('keypress', keyProcessor(bindings));
+	stdin.on('keypress', keyProcessor(keyIterator));
 }

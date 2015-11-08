@@ -8,13 +8,14 @@ import { error, log} from './screenLogger';
 import keyboardProcessor from './keyboardProcessor';
 import window from './window';
 import ContentManager from './contentManager';
-import Modes from './modes';
+import { initialMode } from './modes';
 import StatusLine from './statusLine';
 import { registerCommand } from './commandDispatcher';
 import { spawn } from 'child_process';
 import fs from 'fs';
 import promisify from '../promisify';
 import mkdirp from 'mkdirp';
+import 'babel-polyfill';
 
 (async function() {
 	//If the socket isn't active yet then that means there isn't any server yet. In that case we'll
@@ -96,15 +97,23 @@ import mkdirp from 'mkdirp';
 
 
 
-	const modes = Modes({ window: mainWindow, contentManager });
-	StatusLine({ modes, window: mainWindow });
 
-
-	keyboardProcessor(modes.getCurrentMode());
+	//TODO: move this to some other place
+	let currentMode = '';
+	function getCurrentMode() {
+		return currentMode;
+	}
+	function setCurrentMode(val) {
+		currentMode = val;
+		draw();
+	}
+	StatusLine({ getCurrentMode, window: mainWindow });
+	keyboardProcessor(initialMode({ window : mainWindow, contentManager, setCurrentMode }));
 
 	draw();
 }())
 .then(null, err => {
 	console.error(err.message);
 	console.error(err.stack);
+	process.exit(-1);
 });
