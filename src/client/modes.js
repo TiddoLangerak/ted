@@ -69,3 +69,18 @@ export function fromKeyMap(map) {
 	return treeToGenerator(mapToTree(map));
 }
 
+export function loopingMode(name, factoryFunc) {
+	return function*(state) {
+		if (name) {
+			state.setCurrentMode(name);
+		}
+		let isActive = true;
+		function exitMode() {
+			isActive = false;
+		}
+		let generator = factoryFunc(state, exitMode);
+		while (isActive) {
+			yield * generator();
+		}
+	}
+}

@@ -1,18 +1,11 @@
 import { keys, other } from '../keyboardProcessor';
 import { diffTypes } from '../../diff';
 import { isCharKey } from '../motions/utils';
-import { fromKeyMap } from '../modes';
+import { fromKeyMap, loopingMode } from '../modes';
 
-export default function* (state) {
-	const { window, setCurrentMode, contentManager } = state;
-	setCurrentMode('insert');
-
-	let isActive = true;
-	function exitMode() {
-		isActive = false;
-	}
-
-	const generator = fromKeyMap({
+export default loopingMode('insert', (state, exitMode) => {
+	const { window, contentManager } = state;
+	return fromKeyMap({
 		[keys.ESCAPE] : () => {
 			window.cursor.moveLeft();
 			exitMode();
@@ -61,8 +54,4 @@ export default function* (state) {
 			}
 		}
 	});
-
-	while (isActive) {
-		yield * generator();
-	}
-}
+});
