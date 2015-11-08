@@ -1,4 +1,5 @@
 import subScreen from '../subScreen';
+import { draw } from '../screen';
 import { ctrl, alt } from '../keyboardProcessor';
 
 export default ({ contentManager }) => {
@@ -15,6 +16,7 @@ export default ({ contentManager }) => {
 			if (file.trim()) {
 				contentManager.changeFile(file);
 			}
+			draw();
 		});
 	}
 	return {
