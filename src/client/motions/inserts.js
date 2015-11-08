@@ -1,19 +1,22 @@
 import { diffTypes } from '../../diff';
 import { anchors } from '../Cursor';
+import insertMode from '../modes/insert';
 
-export default ({ window, changeMode, contentManager }) => ({
-	'i' : () => {
-		return changeMode('insert');
-	},
-	'a' : () => {
-		window.cursor.moveRight();
-		return changeMode('insert');
-	},
-	'A' : () => {
-		window.cursor.moveToEOL();
-		return changeMode('insert');
-	},
-	'o' : () => {
+export default (state) => {
+	const { window, contentManager } = state;
+	return {
+		'i' : function*() {
+			yield * insertMode(state);
+		},
+		'a' : function*() {
+			window.cursor.moveRight();
+			yield * insertMode(state);
+		},
+		'A' : function*() {
+			window.cursor.moveToEOL();
+			yield * insertMode(state);
+		},
+		'o' : function*() {
 			const diff = {
 				type : diffTypes.INSERT,
 				line : window.cursor.y,
@@ -26,17 +29,18 @@ export default ({ window, changeMode, contentManager }) => ({
 			if (!window.cursor.isAt(anchors.EOL)) {
 				window.cursor.moveDown();
 			}
-			return changeMode('insert');
-	},
-	'O' : () => {
-		const diff = {
-			type : diffTypes.INSERT,
-			line : window.cursor.y,
-			column : 0,
-			text : '\n'
-		};
-		contentManager.processClientDiff(diff);
-		window.cursor.moveUp();
-		return changeMode('insert');
-	}
-});
+			yield * insertMode(state);
+		},
+		'O' : function*() {
+			const diff = {
+				type : diffTypes.INSERT,
+				line : window.cursor.y,
+				column : 0,
+				text : '\n'
+			};
+			contentManager.processClientDiff(diff);
+			window.cursor.moveUp();
+			yield * insertMode(state);
+		}
+	};
+};

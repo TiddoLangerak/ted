@@ -2,7 +2,7 @@ import styles from 'ansi-styles';
 import { registerDrawable } from './screen';
 import { createSegment, fixedLength, writeIntoBuffer } from './screenBufferUtils';
 
-export default function createStatusLine({ modes, window }) {
+export default function createStatusLine({ getCurrentMode, window }) {
 	const statusLineBg = styles.bgBlue;
 	const statusLineMods = new Set([statusLineBg]);
 	const modeMods = new Set([statusLineBg, styles.bold]);
@@ -13,7 +13,7 @@ export default function createStatusLine({ modes, window }) {
 	};
 	registerDrawable('STATUS_LINE', buffer => {
 		let leftSegment = [
-			...createSegment(modes.getCurrentModeName().toUpperCase(), modeMods),
+			...createSegment(getCurrentMode().toUpperCase(), modeMods),
 			...createSegment(' | ', statusLineMods)
 		];
 		let rightSegment = createSegment(`${window.cursor.y}:${window.cursor.x}`, statusLineMods);
