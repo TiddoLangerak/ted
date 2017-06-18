@@ -1,5 +1,5 @@
 import normalMode from './modes/normal';
-import { other } from './keyboardProcessor';
+import { other, next } from './keyboardProcessor';
 import { error, log} from './screenLogger';
 
 export const initialMode = normalMode;
@@ -124,14 +124,11 @@ function treeToGenerator(tree) {
 
 	//Then we can use the subgenerators to create our root generator that will yield a single key,
 	//find the correct subGenerator, and then `yield *` on said generator.
-	return function*() {
-		const { ch, key } = yield;
+	return async () => {
+		const { ch, key } = await next();
 		const target = key ? key.sequence : ch;
-		const processKey = subGenerators[target] || subGenerators[other] || function*(){};
-		const iterator = processKey(ch, key);
-		if (iterator && iterator[Symbol.iterator]) {
-			yield * iterator;
-		}
+		const processKey = subGenerators[target] || subGenerators[other] || (() => {});
+		await processKey(ch, key);
 	};
 }
 
@@ -154,7 +151,7 @@ export function fromKeyMap(map) {
  *                               which can be used to exit the mode.
  */
 export function loopingMode(name, factoryFunc) {
-	return function*(state) {
+	return async (state) => {
 		if (name) {
 			state.setCurrentMode(name);
 		}
@@ -162,9 +159,9 @@ export function loopingMode(name, factoryFunc) {
 		function exitMode() {
 			isActive = false;
 		}
-		let generator = factoryFunc(state, exitMode);
+		const looper = factoryFunc(state, exitMode);
 		while (isActive) {
-			yield * generator();
+			await looper();
 		}
 	}
 }

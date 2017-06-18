@@ -5,18 +5,18 @@ import insertMode from '../modes/insert';
 export default (state) => {
 	const { window, contentManager } = state;
 	return {
-		'i' : function*() {
-			yield * insertMode(state);
+		'i' : async() => {
+			await insertMode(state);
 		},
-		'a' : function*() {
+		'a' : async () => {
 			window.cursor.moveRight();
-			yield * insertMode(state);
+			await insertMode(state);
 		},
-		'A' : function*() {
+		'A' : async () => {
 			window.cursor.moveToEOL();
-			yield * insertMode(state);
+			await insertMode(state);
 		},
-		'o' : function*() {
+		'o' : async () => {
 			const diff = {
 				type : diffTypes.INSERT,
 				line : window.cursor.y,
@@ -29,9 +29,9 @@ export default (state) => {
 			if (!window.cursor.isAt(anchors.EOL)) {
 				window.cursor.moveDown();
 			}
-			yield * insertMode(state);
+			await insertMode(state);
 		},
-		'O' : function*() {
+		'O' : async () => {
 			const diff = {
 				type : diffTypes.INSERT,
 				line : window.cursor.y,
@@ -40,7 +40,7 @@ export default (state) => {
 			};
 			contentManager.processClientDiff(diff);
 			window.cursor.moveUp();
-			yield * insertMode(state);
+			await insertMode(state);
 		}
 	};
 };

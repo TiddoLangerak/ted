@@ -1,17 +1,17 @@
-import { keys } from '../keyboardProcessor';
+import { keys, next } from '../keyboardProcessor';
 import { copy } from 'copy-paste';
 import { diffTypes } from '../../diff';
 import search from './search';
 import movement from './movement';
 import { fromKeyMap } from '../modes';
 
-export function* deleteUnderMovement(state, firstPress) {
+export async function deleteUnderMovement(state, firstPress) {
 	const { window, contentManager } = state;
 	let from = {
 		line : window.cursor.y,
 		column : window.cursor.x
 	};
-	yield * deleteMovement(state, firstPress);
+	await deleteMovement(state, firstPress);
 	let to = {
 		line : window.cursor.y,
 		column : window.cursor.x
@@ -55,7 +55,7 @@ export function removeLine({ window, contentManager }) {
 	contentManager.processClientDiff(diff);
 }
 
-function* deleteMovement(state, firstPress) {
+async function deleteMovement(state, firstPress) {
 	let { ch, key } = firstPress;
 	let sequence = ch;
 
@@ -73,7 +73,7 @@ function* deleteMovement(state, firstPress) {
 		iteratorState = iterator.next({ ch, key });
 	}
 	while (!iteratorState.done) {
-		({ ch, key } = yield);
+		({ ch, key } = await next());
 		sequence += ch;
 		iteratorState = iterator.next({ ch, key });
 	}
@@ -85,13 +85,13 @@ function* deleteMovement(state, firstPress) {
 
 export default (state) => {
 	return {
-		'd' : function*() {
-			let firstPress = yield;
+		'd' : async() => {
+			let firstPress = await next();
 			let { ch, key } = firstPress;
 			if (ch === 'd') {
 				removeLine(state);
 			} else if (ch !== keys.escape) {
-				yield * deleteUnderMovement(state, firstPress);
+				await deleteUnderMovement(state, firstPress);
 			}
 		}
 	};

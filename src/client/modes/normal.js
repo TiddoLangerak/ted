@@ -27,8 +27,8 @@ export default loopingMode('normal', (state) => {
 			[ctrl('r')] : () => {
 				contentManager.redo();
 			},
-			':' : function*() {
-				yield * commandMode(state);
+			':' : async() => {
+				await commandMode(state);
 			},
 			[other] : (ch, key) => {
 				log(util.inspect(ch), key);

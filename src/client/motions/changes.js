@@ -1,4 +1,4 @@
-import { keys } from '../keyboardProcessor';
+import { keys, next } from '../keyboardProcessor';
 import { copy } from 'copy-paste';
 import { diffTypes } from '../../diff';
 import search from './search';
@@ -15,15 +15,15 @@ export default (state) => {
 
 	//TODO: deduplicate
 	return {
-		'c' : function*() {
-			let firstPress = yield;
+		'c' : async () => {
+			let firstPress = await next();
 			let { ch, key } = firstPress;
 			if (ch === 'c') {
 				removeLine(state);
-				yield * insertMode(state);
+				await insertMode(state);
 			} else if (ch !== keys.escape) {
-				yield * deleteUnderMovement(state, firstPress);
-				yield * insertMode(state);
+				await deleteUnderMovement(state, firstPress);
+				await insertMode(state);
 			}
 		}
 	};

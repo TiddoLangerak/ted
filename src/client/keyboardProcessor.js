@@ -24,11 +24,16 @@ export function alt(c) {
 	return '\u001b' + c;
 }
 
-function keyProcessor(iterator) {
-	iterator.next();
-	return (ch, key) => {
-		iterator.next({ ch, key });
-	};
+let resolver;
+let waiter = new Promise((resolve) => resolver = resolve);
+
+export async function next() {
+	return await waiter;
+}
+
+function keyProcessor(ch, key) {
+	resolver({ ch, key });
+	waiter = new Promise((resolve) => resolver = resolve);
 }
 
 export const keys = {
@@ -48,7 +53,7 @@ export const other = Symbol('other');
  *
  * An action may return a new set of bindings which will replace the current set of bindings
  */
-export default function start(keyIterator) {
+export default function start() {
 	keypress(stdin);
-	stdin.on('keypress', keyProcessor(keyIterator));
+	stdin.on('keypress', keyProcessor);
 }
