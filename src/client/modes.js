@@ -1,5 +1,6 @@
 import normalMode from './modes/normal';
 import { other } from './keyboardProcessor';
+import { error, log} from './screenLogger';
 
 export const initialMode = normalMode;
 
@@ -126,8 +127,11 @@ function treeToGenerator(tree) {
 	return function*() {
 		const { ch, key } = yield;
 		const target = key ? key.sequence : ch;
-		const processKey = subGenerators[target] || subGenerators[other] || () => {};
-		yield * processKey(ch, key);
+		const processKey = subGenerators[target] || subGenerators[other] || function*(){};
+		const iterator = processKey(ch, key);
+		if (iterator && iterator[Symbol.iterator]) {
+			yield * iterator;
+		}
 	};
 }
 

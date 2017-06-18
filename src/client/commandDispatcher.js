@@ -13,14 +13,15 @@ const commandDispatcher = {
 		} else {
 			error(`Action '${commandDispatcher.command}' not found`);
 		}
-	},
-	registerCommand(name, action) {
-		commands.set(name, action);
 	}
 };
 
 registerDrawable('COMMAND_LINE', buffer => {
 	fillLine(buffer[0], commandDispatcher.command);
 });
+
+export function registerCommand(name, action) {
+	commands.set(name, action);
+}
 
 export default commandDispatcher;

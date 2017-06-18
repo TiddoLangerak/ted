@@ -1,4 +1,4 @@
-import 'babel/polyfill';
+import 'babel-polyfill';
 import net from 'net';
 import { SOCKET_PATH } from '../paths';
 import { socketIsActive, cleanInactiveSocket } from '../socketManager';
