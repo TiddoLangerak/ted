@@ -75,14 +75,14 @@ function mapToTree(map) {
 }
 
 /**
- * Transforms a key-tree to a generator function that can be used by the keyboard processor.
+ * Transforms a key-tree to an async processor function that can be used by the keyboard processor.
  */
-function treeToGenerator(tree) {
-	//We transform the key-tree into a "tree" of generator functions that can delegate to each other.
-	//Each key will be represented by a generator function, and generator functions will yield * to
-	//subsequent generator functions. E.g. for the motion 'abc' there will be a generator function
-	//called for 'a', which will `yield *` on the generator function for `ab`, which will `yield *`
-	//for the generator function for `abc`.
+function treeToKeyProcessor(tree) {
+	//We transform the key-tree into a "tree" of async functions that can delegate to each other.
+	//Each key will be represented by an async function, and async functions will `await` to
+	//subsequent async functions. E.g. for the motion 'abc' there will be an async function
+	//called for 'a', which will `await` on the async function for `ab`, which will `await`
+	//for the async function for `abc`.
 	//
 	//illustrative example:
 	//in:
@@ -95,48 +95,48 @@ function treeToGenerator(tree) {
 	//}
 	//
 	//out (actual implementation is different, this is for illustration purposes only):
-	//function*() {
-	//  const { ch, key } = yield;
+	//async function() {
+	//  const { ch, key } = await next();
 	//  if (ch === 'a') {
-	//    yield * function() {
-	//      const { ch, key } = yield;
+	//    await async function() {
+	//      const { ch, key } = await net();
 	//      if (ch === 'a') {
-	//        yield * action1();
+	//        await action1();
 	//      } else if (ch === 'b') {
-	//        yield * action2();
+	//        await action2();
 	//      }
-	//    }
+	//    }();
 	//  } else if (ch === 'b') {
-	//    yield * action3();
+	//    await action3();
 	//  }
 	//}
 
-	//To get the desired result we first need to (recursively) get the subgenerators for each defined key
-	const subGenerators = {};
+	//To get the desired result we first need to (recursively) get the sub processors for each defined key
+	const subProcessors = {};
 	Reflect.ownKeys(tree)
 		.forEach(key => {
 			if (typeof tree[key] === 'function') {
-				subGenerators[key] = tree[key];
+				subProcessors[key] = tree[key];
 			} else {
-				subGenerators[key] = treeToGenerator(tree[key]);
+				subProcessors[key] = treeToKeyProcessor(tree[key]);
 			}
 		});
 
-	//Then we can use the subgenerators to create our root generator that will yield a single key,
-	//find the correct subGenerator, and then `yield *` on said generator.
+	//Then we can use the subProcessors to create our root processors that will await a single key,
+	//find the correct subProcessors, and then `await` on said processor.
 	return async () => {
 		const { ch, key } = await next();
 		const target = key ? key.sequence : ch;
-		const processKey = subGenerators[target] || subGenerators[other] || (() => {});
+		const processKey = subProcessors[target] || subProcessors[other] || (() => {});
 		await processKey(ch, key);
 	};
 }
 
 /**
- * Creates a mode generator function from a keymap.
+ * Creates a mode processor function from a keymap.
  */
 export function fromKeyMap(map) {
-	return treeToGenerator(mapToTree(map));
+	return treeToKeyProcessor(mapToTree(map));
 }
 
 /**
@@ -146,7 +146,7 @@ export function fromKeyMap(map) {
  * the mode when the mode starts, and then starts the mode in infinite loop mode.
  *
  * @param {String} name The name of the mode. Will be displayed in the status bar.
- * @param {Function} factoryFunc A function that creates the mode generator. It receives the mode
+ * @param {Function} factoryFunc A function that creates the mode processor. It receives the mode
  *                               state as first parameter and an `exitMode` function as second parameter,
  *                               which can be used to exit the mode.
  */

@@ -1,17 +1,17 @@
-import { keys, next } from '../keyboardProcessor';
+import { keys, next, peek } from '../keyboardProcessor';
 import { copy } from 'copy-paste';
 import { diffTypes } from '../../diff';
 import search from './search';
 import movement from './movement';
 import { fromKeyMap } from '../modes';
 
-export async function deleteUnderMovement(state, firstPress) {
+export async function deleteUnderMovement(state) {
 	const { window, contentManager } = state;
 	let from = {
 		line : window.cursor.y,
 		column : window.cursor.x
 	};
-	await deleteMovement(state, firstPress);
+	await deleteMovement(state);
 	let to = {
 		line : window.cursor.y,
 		column : window.cursor.x
@@ -55,30 +55,18 @@ export function removeLine({ window, contentManager }) {
 	contentManager.processClientDiff(diff);
 }
 
-async function deleteMovement(state, firstPress) {
-	let { ch, key } = firstPress;
-	let sequence = ch;
+async function deleteMovement(state) {
+	let { ch, key } = await peek();
+	let firstChar = ch;
 
 	const { window, contentManager } = state;
-	const deleteMotionGenerator = fromKeyMap(Object.assign(
+	const deleteMotionProcessor = fromKeyMap(Object.assign(
 		search(state),
 		movement(state)));
 
-	const iterator = deleteMotionGenerator();
-	//The start here is a bit ugly: we want to delegate the to iterator, but we've already
-	//stolen the first character. Therefore we manually need to start the iterator (first next),
-	//pass the first character (second next), and then get in the delegation loop.
-	let iteratorState = iterator.next();
-	if (!iteratorState.done) {
-		iteratorState = iterator.next({ ch, key });
-	}
-	while (!iteratorState.done) {
-		({ ch, key } = await next());
-		sequence += ch;
-		iteratorState = iterator.next({ ch, key });
-	}
+	await deleteMotionProcessor();
 	//Some movements behave a bit different when used as deletion, so we fixup those here
-	if ('eEft'.indexOf(sequence.charAt(0)) !== -1) {
+	if ('eEft'.indexOf(firstChar) !== -1) {
 		window.cursor.moveRight();
 	}
 }
@@ -86,12 +74,13 @@ async function deleteMovement(state, firstPress) {
 export default (state) => {
 	return {
 		'd' : async() => {
-			let firstPress = await next();
-			let { ch, key } = firstPress;
+			const { ch, key } = await peek();
 			if (ch === 'd') {
+				//We now do want to pop the character, so we can call next.
+				next();
 				removeLine(state);
 			} else if (ch !== keys.escape) {
-				await deleteUnderMovement(state, firstPress);
+				await deleteUnderMovement(state);
 			}
 		}
 	};

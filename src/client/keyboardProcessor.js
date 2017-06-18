@@ -24,16 +24,59 @@ export function alt(c) {
 	return '\u001b' + c;
 }
 
-let resolver;
-let waiter = new Promise((resolve) => resolver = resolve);
+const presses = [];
+const callbacks = [];
 
-export async function next() {
-	return await waiter;
+function flushQueue(){
+	while (callbacks.length && presses.length) {
+		callbacks.pop()(presses.pop());
+	}
 }
 
+/**
+ * Gets the next keypress, and remove it from the queue.
+ *
+ * If a keypress is already queued then this function will return it directly (sync).
+ * If it isn't already queued, then it will return a promise that resolves to
+ * the next unhandled keypress.
+ *
+ * Note that calls to next & peek are queued. A keypress will always resolve the
+ * first scheduled call to next, and any calls to peek that were scheduled *before*
+ * the first `next`.
+ */
+export function next() {
+	if (presses.length) {
+		return presses.pop();
+	}
+	return new Promise(resolve => callbacks.unshift(resolve));
+}
+
+/**
+ * Gets the next keypress without removing it from the queue.
+ * If a keypress is already queued then this function will return it directly (sync).
+ * If it isn't already queued, then it will return a promise that resolves to
+ * the next unhandled keypress.
+ *
+ * Note that calls to next & peek are queued. A keypress will always resolve the
+ * first scheduled call to next, and any calls to peek that were scheduled *before*
+ * the first `next`.
+ */
+export function peek() {
+	if (presses.length) {
+		return presses[presses.length - 1];
+	}
+	return new Promise(resolve => {
+		callbacks.unshift((res) => {
+			presses.push(res);
+			resolve(res);
+		});
+	});
+}
+
+
 function keyProcessor(ch, key) {
-	resolver({ ch, key });
-	waiter = new Promise((resolve) => resolver = resolve);
+	presses.unshift({ ch, key });
+	flushQueue();
 }
 
 export const keys = {
