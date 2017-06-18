@@ -3,6 +3,7 @@ import movement from '../motions/movement';
 import inserts from '../motions/inserts';
 import clipboard from '../motions/clipboard';
 import deletions from '../motions/deletions';
+import changes from '../motions/changes';
 import fuzzyFileSearch from '../motions/fuzzyFileSearch';
 import { log, clearLog } from '../screenLogger';
 import { ctrl, keys, other } from '../keyboardProcessor';
@@ -38,6 +39,7 @@ export default loopingMode('normal', (state) => {
 		search(state),
 		clipboard(state),
 		deletions(state),
-		fuzzyFileSearch(state)
+		fuzzyFileSearch(state),
+		changes(state)
 	));
 });
