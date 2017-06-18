@@ -1,5 +1,5 @@
 {
-  "plugins": [],
+  "plugins": [ "transform-object-rest-spread" ],
   "presets": [
     "flow",
     ["env", { "targets" : { "node" : "8.0" } } ]

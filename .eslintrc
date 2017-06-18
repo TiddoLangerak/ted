@@ -1,28 +1,28 @@
 {
-    "parser": "babel-eslint",
-    "rules": {
-        "no-console" : [0],
-        "no-constant-condition" : [0],
-        "quotes": [
-            2,
-            "single"
-        ],
-        "linebreak-style": [
-            2,
-            "unix"
-        ],
-        "semi": [
-            2,
-            "always"
-        ],
-        "no-mixed-spaces-and-tabs" : [2, "smart-tabs"]
-    },
-    "env": {
-        "es6": true,
-        "node": true
-    },
-    "ecmaFeatures" : {
-      "modules" : true
-    },
-    "extends": "eslint:recommended"
+  "extends" : [ "airbnb", "plugin:flowtype/recommended" ],
+  "parser": "babel-eslint",
+  "plugins" : [ "flowtype" ],
+  "rules": {
+    "flowtype/require-valid-file-annotation": [
+      2,
+    "always", {
+      "annotationStyle": "block"
+    }
+    ],
+    "no-param-reassign" : [
+      "error",
+      {
+        "props": false,
+      }
+    ],
+    "quote-props" : [
+      "error",
+      "as-needed",
+      { "numbers" : true }
+    ]
+  },
+  "env": {
+    "es6": true,
+    "node": true
+  }
 }

@@ -1,7 +1,10 @@
+/* @flow */
 import path from 'path';
 
+const home = process.env.HOME || '/tmp';
+
 export const DOT_FOLDER_NAME = '.ted';
-export const DOT_FOLDER_PATH = path.join(process.env.HOME, DOT_FOLDER_NAME);
+export const DOT_FOLDER_PATH = path.join(home, DOT_FOLDER_NAME);
 
 export const SOCKET_FILE_NAME = 'TED.sock';
 export const SOCKET_PATH = path.join(DOT_FOLDER_PATH, SOCKET_FILE_NAME);

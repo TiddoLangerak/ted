@@ -1,10 +1,13 @@
+/* @flow */
 import { createFileBuffer } from './buffer';
 
 const cache = new Map();
-export async function getBuffer(file) {
-	if (!cache.has(file)) {
-		const buffer = await createFileBuffer(file);
-		cache.set(file, buffer);
-	}
-	return cache.get(file);
+// eslint-disable-next-line import/prefer-default-export
+export async function getBuffer(file: string) {
+  let buffer = cache.get(file);
+  if (!buffer) {
+    buffer = await createFileBuffer(file);
+    cache.set(file, buffer);
+  }
+  return buffer;
 }

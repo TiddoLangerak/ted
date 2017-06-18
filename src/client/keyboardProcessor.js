@@ -1,3 +1,4 @@
+/* @flow */
 import keypress from 'keypress';
 import { stdin } from './stdio';
 
@@ -6,13 +7,13 @@ import { stdin } from './stdio';
  *
  * This does NOT compose with other functions.
  */
-export function ctrl(c) {
-	const charNum = c.charCodeAt(0) - 'a'.charCodeAt(0);
-	if (charNum > 25) {
-		throw new Error('ctrl modifier can only be used for lowercase letters');
-	}
-	//See http://unicodelookup.com/#ctrl
-	return String.fromCharCode(charNum + 1);
+export function ctrl(c: string) {
+  const charNum = c.charCodeAt(0) - 'a'.charCodeAt(0);
+  if (charNum > 25) {
+    throw new Error('ctrl modifier can only be used for lowercase letters');
+  }
+  // See http://unicodelookup.com/#ctrl
+  return String.fromCharCode(charNum + 1);
 }
 
 /**
@@ -20,17 +21,17 @@ export function ctrl(c) {
  *
  * This does NOT compose with other functions.
  */
-export function alt(c) {
-	return '\u001b' + c;
+export function alt(c: string) {
+  return `\u001b${c}`;
 }
 
 const presses = [];
 const callbacks = [];
 
-function flushQueue(){
-	while (callbacks.length && presses.length) {
-		callbacks.pop()(presses.pop());
-	}
+function flushQueue() {
+  while (callbacks.length && presses.length) {
+    callbacks.pop()(presses.pop());
+  }
 }
 
 /**
@@ -45,10 +46,10 @@ function flushQueue(){
  * the first `next`.
  */
 export function next() {
-	if (presses.length) {
-		return presses.pop();
-	}
-	return new Promise(resolve => callbacks.unshift(resolve));
+  if (presses.length) {
+    return presses.pop();
+  }
+  return new Promise(resolve => callbacks.unshift(resolve));
 }
 
 /**
@@ -62,29 +63,30 @@ export function next() {
  * the first `next`.
  */
 export function peek() {
-	if (presses.length) {
-		return presses[presses.length - 1];
-	}
-	return new Promise(resolve => {
-		callbacks.unshift((res) => {
-			presses.push(res);
-			resolve(res);
-		});
-	});
+  if (presses.length) {
+    return presses[presses.length - 1];
+  }
+  return new Promise((resolve) => {
+    callbacks.unshift((res) => {
+      presses.push(res);
+      resolve(res);
+    });
+  });
 }
 
 
 function keyProcessor(ch, key) {
-	presses.unshift({ ch, key });
-	flushQueue();
+  presses.unshift({ ch, key });
+  flushQueue();
 }
 
 export const keys = {
-	BACKSPACE : '\u007f',
-	ESCAPE : '\u001b'
+  BACKSPACE: '\u007f',
+  ESCAPE: '\u001b',
 };
 
-export const other = Symbol('other');
+// TODO: remove any type when flow has proper support for symbols
+export const other : any = Symbol('other');
 
 
 /**
@@ -97,6 +99,6 @@ export const other = Symbol('other');
  * An action may return a new set of bindings which will replace the current set of bindings
  */
 export default function start() {
-	keypress(stdin);
-	stdin.on('keypress', keyProcessor);
+  keypress(stdin);
+  stdin.on('keypress', keyProcessor);
 }
