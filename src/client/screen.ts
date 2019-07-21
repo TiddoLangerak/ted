@@ -186,6 +186,7 @@ function initialize() {
   });
   process.on('uncaughtException', (e) => {
     closeAlternateBuffer();
+    console.error(e);
     throw e;
   });
 
