@@ -27,6 +27,12 @@
     "flow-typed": "^2.1.2"
   },
   "dependencies": {
+    "@types/ansi-escapes": "^4.0.0",
+    "@types/ansi-styles": "^3.2.1",
+    "@types/copy-paste": "^1.1.30",
+    "@types/keypress": "^2.0.30",
+    "@types/mkdirp": "^0.5.2",
+    "@types/uuid": "^3.4.5",
     "ansi-escapes": "^1.1.0",
     "ansi-styles": "^2.1.0",
     "babel-polyfill": "^6.0.16",
@@ -35,6 +41,7 @@
     "eslint": "^3.19.0",
     "keypress": "^0.2.1",
     "mkdirp": "^0.5.1",
+    "typescript": "^3.5.3",
     "uuid": "^2.0.1"
   }
 }
