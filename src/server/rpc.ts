@@ -1,28 +1,11 @@
 import uuid from 'uuid';
-import net from 'net';
+import net, { Socket } from 'net';
 import { sendMessage, messageTypes } from '../protocol';
 import { getBuffer } from './bufferManager';
 
 
 type RPCArg = {
-  clients: net.Socket[]
-};
-
-type RequestFileArg = {
-  file: string
-};
-
-type SaveFileArg = {
-  file: string,
-  force?: boolean
-};
-
-type UndoArg = {
-  file: string
-};
-
-type RedoArg = {
-  file: string
+  clients: Set<Socket>
 };
 
 export default {

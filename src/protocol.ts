@@ -1,5 +1,6 @@
 import net from 'net';
 import { Diff } from './diff';
+import { RpcAction } from "./protocol/rpc";
 
 export enum MessageType {
   RPC= 'rpc',
@@ -10,10 +11,8 @@ export enum MessageType {
 };
 
 export type RPCMessage = {
-  type: MessageType.RPC,
-  action: string,
-  arguments?: unknown
-};
+  type: MessageType.RPC
+} & RpcAction;
 
 export type EventMessage = {
   type: MessageType.EVENT
@@ -51,7 +50,7 @@ export function messageParser(onMessage: (message: Message) => unknown) {
   return (data: string) => {
     buffer += data;
     const messages = buffer.split('\n');
-    buffer = messages.pop();
+    buffer = messages.pop() || '';
     messages.forEach((messageString) => {
       // TODO: error handling
       const message = JSON.parse(messageString);

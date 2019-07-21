@@ -9,7 +9,7 @@ import { Diff } from '../diff';
  * It calls the callback with an error when the check fails, or with nothing
  * when it succeeds. Because fuck consistency.
  */
-async function checkAccess(filePath, mode = fs.F_OK) {
+async function checkAccess(filePath: string, mode = fs.constants.F_OK): Promise<boolean> {
   return new Promise((resolve) => {
     fs.access(filePath, mode, (err) => {
       resolve(!err);
@@ -21,7 +21,7 @@ class Buffer {
   history: Diff[];
   future: Diff[];
   content: string;
-  originalContent: string;
+  originalContent: string | undefined;
   constructor(content: string) {
     this.content = content;
     this.originalContent = content;
@@ -38,7 +38,7 @@ class Buffer {
   }
   undo() {
     if (this.history.length) {
-      const originalDiff = this.history.pop();
+      const originalDiff = this.history.pop()!;
       const diff = invertDiff(originalDiff);
       this.content = applyDiff(this.content, diff);
       this.future.unshift(originalDiff);
@@ -48,7 +48,7 @@ class Buffer {
   }
   redo() {
     if (this.future.length) {
-      const diff = this.future.shift();
+      const diff = this.future.shift()!;
       this.content = applyDiff(this.content, diff);
       this.history.push(diff);
       return diff;
@@ -61,17 +61,17 @@ class Buffer {
 class FileBuffer extends Buffer {
   filePath: string;
   readOnly: boolean;
-  originalContent: string;
+  originalContent: string | undefined;
   constructor(filePath: string, content: string = '', readOnly: boolean = false) {
     super(content);
     this.filePath = filePath;
     this.readOnly = readOnly;
   }
-  async save(force) {
+  async save(force: boolean) {
     if (!force) {
       // If we don't force save we first check if the file hasn't changed in the mean time.
       // It would be a shame if we overwrite external changes without notifying the user
-      const readable = await checkAccess(this.filePath, fs.R_OK);
+      const readable = await checkAccess(this.filePath, fs.constants.R_OK);
       if (readable) {
         const currentContent = await promisify(cb => fs.readFile(this.filePath, 'utf8', cb));
         if (currentContent !== this.originalContent) {
@@ -87,18 +87,18 @@ class FileBuffer extends Buffer {
 
 // eslint-disable-next-line import/prefer-default-export
 export async function createFileBuffer(filePath: string): Promise<FileBuffer> {
-  const fileExists = await checkAccess(filePath, fs.F_OK);
+  const fileExists = await checkAccess(filePath, fs.constants.F_OK);
   if (!fileExists) {
     return new FileBuffer(filePath);
   }
-  const readable = await checkAccess(filePath, fs.R_OK);
+  const readable = await checkAccess(filePath, fs.constants.R_OK);
   if (!readable) {
     // TODO: better error objects
     throw new Error(`${filePath} is not readable`);
   }
   const [writeable, content] = await Promise.all([
-    checkAccess(filePath, fs.W_OK),
-    promisify(cb => fs.readFile(filePath, 'utf8', cb)),
+    checkAccess(filePath, fs.constants.W_OK),
+    promisify(cb => fs.readFile(filePath, 'utf8', cb)) as Promise<string>,
   ]);
   // TODO: install watchers on the file system
   return new FileBuffer(filePath, content, !writeable);

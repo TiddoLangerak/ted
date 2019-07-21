@@ -1,6 +1,6 @@
-export const diffTypes = {
-  INSERT: 'insert',
-  DELETE: 'delete',
+export enum DiffType {
+  INSERT= 'insert',
+  DELETE= 'delete',
 };
 
 export type Loc = {
@@ -9,11 +9,11 @@ export type Loc = {
 };
 
 export type InsertDiff = {
-  type: 'insert',
+  type: DiffType.INSERT,
   text: string
 } & Loc;
 export type DeleteDiff = {
-  type: 'delete',
+  type: DiffType.DELETE,
   from: Loc,
   to: Loc,
   text: string
@@ -23,32 +23,32 @@ export type Diff = InsertDiff | DeleteDiff;
 
 export function invertDiff(diff: Diff): Diff {
   switch (diff.type) {
-    case diffTypes.INSERT: {
-      const inverted = {};
-      inverted.type = diffTypes.DELETE;
-      inverted.from = { line: diff.line, column: diff.column };
+    case DiffType.INSERT: {
       const lines = diff.text.split('\n');
-      if (lines.length === 1) {
-        inverted.to = { line: diff.line, column: diff.column + lines[0].length };
-      } else {
-        inverted.to = {
+      const from = { line: diff.line, column: diff.column }
+      const to = lines.length === 1
+        ? { line: diff.line, column: diff.column + lines[0].length }
+        : {
           line: diff.line + (lines.length - 1),
           column: lines[lines.length - 1].length,
         };
-      }
-      inverted.text = diff.text;
-      return inverted;
+
+      return {
+        type: DiffType.DELETE,
+        from,
+        to,
+        text: diff.text
+      };
+
     }
-    case diffTypes.DELETE : {
-      const inverted = {};
-      inverted.type = diffTypes.INSERT;
-      inverted.line = diff.from.line;
-      inverted.column = diff.from.column;
-      inverted.text = diff.text;
-      return inverted;
+    case DiffType.DELETE : {
+      return {
+        type : DiffType.INSERT,
+        line : diff.from.line,
+        column : diff.from.column,
+        text : diff.text
+      };
     }
-    default :
-      throw new Error('Unkown diff type');
   }
 }
 
@@ -79,7 +79,7 @@ export function applyDiff(input: string | string[], diff: Diff) {
   }
 
   switch (diff.type) {
-    case diffTypes.INSERT : {
+    case DiffType.INSERT : {
       // We'll create an empty line when text is inserted below the last line
       if (diff.line === lines.length) {
         console.log("linepush");
@@ -95,7 +95,7 @@ export function applyDiff(input: string | string[], diff: Diff) {
       lines.splice(diff.line, 1, ...newLines);
       break;
     }
-    case diffTypes.DELETE : {
+    case DiffType.DELETE : {
       // We copy the from and to such that we can alter them at will
       const from = Object.assign({}, diff.from);
       const to = Object.assign({}, diff.to);
@@ -120,8 +120,6 @@ export function applyDiff(input: string | string[], diff: Diff) {
       lines.splice(diff.from.line, linesToReplace, newLine);
       break;
     }
-    default :
-      throw new Error(`Unkown diff type ${diff.type}`);
   }
 
   return lines.join('\n');
