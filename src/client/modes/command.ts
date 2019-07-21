@@ -2,7 +2,8 @@ import commandDispatcher from '../commandDispatcher';
 import { draw } from '../screen';
 import { keys, other } from '../keyboardProcessor';
 import { isCharKey } from '../motions/utils';
-import { fromKeyMap, loopingMode } from '../modes';
+import { fromKeyMap } from '../modes';
+import { loopingMode } from "./loopingMode";
 
 export default loopingMode('command', (state, exitMode) => {
   commandDispatcher.command = ':';

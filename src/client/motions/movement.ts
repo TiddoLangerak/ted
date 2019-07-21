@@ -1,5 +1,5 @@
 import { wordCharacter, not, compilePattern, oneOf } from '../../patterns';
-import { State } from '../';
+import { State } from "../state";
 
 export default ({ window }: State) => {
   const cursor = window.getCursor();

@@ -1,7 +1,8 @@
 import { keys, other } from '../keyboardProcessor';
 import { DiffType, Diff } from '../../diff';
 import { isCharKey } from '../motions/utils';
-import { fromKeyMap, loopingMode } from '../modes';
+import { fromKeyMap } from '../modes';
+import { loopingMode } from "./loopingMode";
 
 export default loopingMode('insert', (state, exitMode) => {
   const { window, contentManager } = state;

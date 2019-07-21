@@ -1,6 +1,6 @@
 import { other, Key } from '../keyboardProcessor';
 import { isCharKey } from './utils';
-import { State } from '../';
+import { State } from "../state";
 
 export default ({ window }: State) => {
   const cursor = window.getCursor();

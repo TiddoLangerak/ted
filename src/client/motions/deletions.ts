@@ -4,7 +4,7 @@ import { DiffType, DeleteDiff } from '../../diff';
 import search from './search';
 import movement from './movement';
 import { fromKeyMap } from '../modes';
-import { State } from '../';
+import { State } from "../state";
 
 async function deleteMovement(state: State) {
   const { ch } = await peek();

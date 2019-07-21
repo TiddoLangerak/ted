@@ -1,8 +1,7 @@
 import { copy, paste } from 'copy-paste';
 import { DiffType, InsertDiff } from '../../diff';
 import promisify from '../../promisify';
-import { State } from '../';
-
+import { State } from "../state";
 
 export default ({ window, contentManager }: State) => {
   const cursor = window.getCursor();

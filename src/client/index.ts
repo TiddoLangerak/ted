@@ -18,12 +18,6 @@ import promisify from '../promisify';
 import { Window } from './window';
 import { ContentManager } from './contentManager';
 
-export type State = {
-  window: Window,
-  contentManager: ContentManager,
-  setCurrentMode(mode: string) : void
-};
-
 (async function run() {
   // If the socket isn't active yet then that means there isn't any server yet. In that case we'll
   // start one.

@@ -1,7 +1,7 @@
 import subScreen from '../subScreen';
 import { draw } from '../screen';
 import { ctrl, alt } from '../keyboardProcessor';
-import { State } from '../';
+import { State } from "../state";
 
 export default ({ contentManager }: State) => {
   function searchWith(program: string, args = []) {

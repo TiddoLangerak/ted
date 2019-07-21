@@ -9,7 +9,8 @@ import fuzzyFileSearch from '../motions/fuzzyFileSearch';
 import { log, clearLog } from '../screenLogger';
 import { ctrl, keys, other } from '../keyboardProcessor';
 import commandMode from './command';
-import { fromKeyMap, loopingMode } from '../modes';
+import { fromKeyMap } from '../modes';
+import { loopingMode } from "./loopingMode";
 
 export default loopingMode('normal', (state) => {
   const { contentManager } = state;
