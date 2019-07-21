@@ -5,7 +5,7 @@ import fs from 'fs';
 import mkdirp from 'mkdirp';
 import { SOCKET_PATH, SERVER_LOG_PATH } from '../paths';
 import { socketIsActive } from '../socketManager';
-import { messageParser, sendMessage, messageTypes } from '../protocol';
+import { messageParser, sendMessage, MessageType } from '../protocol';
 import { draw } from './screen';
 import { error, log } from './screenLogger';
 import keyboardProcessor from './keyboardProcessor';
@@ -29,7 +29,7 @@ export type State = {
   // start one.
   if (!(await socketIsActive())) {
     await promisify(cb => mkdirp(path.dirname(SERVER_LOG_PATH), cb));
-    const serverLog = await promisify(cb => fs.open(SERVER_LOG_PATH, 'a', 0o666, cb));
+    const serverLog : number = await promisify(cb => fs.open(SERVER_LOG_PATH, 'a', 0o666, cb));
     // The node executable may be located at different locations dependening on
     // the system configuration. We do know however that the client itself is
     // started with a valid node executable, hence we can use process.argv[0] to
@@ -43,7 +43,7 @@ export type State = {
     server.unref();
     await new Promise((resolve) => {
       const interval = setInterval(() => {
-        fs.access(SOCKET_PATH, fs.F_OK, (err) => {
+        fs.access(SOCKET_PATH, fs.constants.F_OK, (err) => {
           if (!err) {
             clearInterval(interval);
             resolve();
@@ -57,7 +57,7 @@ export type State = {
     log('Connected to server');
     if (process.argv[2]) {
       const file = path.resolve(process.cwd(), process.argv[2]);
-      sendMessage(client, { type: messageTypes.RPC, action: 'requestFile', arguments: { file } });
+      sendMessage(client, { type: MessageType.RPC, action: 'requestFile', arguments: { file } });
     }
   });
 
@@ -71,17 +71,17 @@ export type State = {
   // TODO: share this with server.js
   client.on('data', messageParser((message) => {
     switch (message.type) {
-      case messageTypes.BUFFER:
+      case MessageType.BUFFER:
         mainWindow.setContent(message.buffer.content);
         mainWindow.file = message.buffer.filePath;
         mainWindow.isDirty = message.buffer.isDirty;
-        mainWindow.cursor.moveTo(0, 0);
+        mainWindow.getCursor().moveTo(0, 0);
         draw();
         break;
-      case messageTypes.DIFF:
+      case MessageType.DIFF:
         contentManager.processServerDiff(message);
         break;
-      case messageTypes.EVENT: {
+      case MessageType.EVENT: {
         const event = Object.assign({}, message);
         delete event.type;
         if (event.event === 'saved' && event.file === mainWindow.file) {
@@ -91,7 +91,7 @@ export type State = {
         log(JSON.stringify(event));
         break;
       }
-      case messageTypes.ERROR:
+      case MessageType.ERROR:
         error(message.message);
         draw();
         break;
@@ -110,7 +110,7 @@ export type State = {
   function getCurrentMode() {
     return currentMode;
   }
-  function setCurrentMode(val) {
+  function setCurrentMode(val: string) {
     currentMode = val;
     draw();
   }

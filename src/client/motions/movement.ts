@@ -2,6 +2,7 @@ import { wordCharacter, not, compilePattern, oneOf } from '../../patterns';
 import { State } from '../';
 
 export default ({ window }: State) => {
+  const cursor = window.getCursor();
   /**
    * Jump over a match.
    *
@@ -13,12 +14,12 @@ export default ({ window }: State) => {
   function jumpOverMatch(regexp: RegExp, jumpOverLastChar = true, reverse = false) {
     let remainder;
     if (reverse) {
-      remainder = window.getCurrentLine().substr(0, window.cursor.x)
+      remainder = window.getCurrentLine().substr(0, cursor.x)
         .split('')
         .reverse()
         .join('');
     } else {
-      remainder = window.getCurrentLine().substr(window.cursor.x + 1);
+      remainder = window.getCurrentLine().substr(cursor.x + 1);
     }
 
     const match = regexp.exec(remainder);
@@ -26,9 +27,9 @@ export default ({ window }: State) => {
       const extraOffset = jumpOverLastChar ? 1 : 0;
       const totalOffset = match[0].length + extraOffset;
       if (reverse) {
-        window.cursor.moveLeft(totalOffset);
+        cursor.moveLeft(totalOffset);
       } else {
-        window.cursor.moveRight(totalOffset);
+        cursor.moveRight(totalOffset);
       }
     }
   }
@@ -39,20 +40,20 @@ export default ({ window }: State) => {
   const nextCharSequence = compilePattern('^\\S*\\s+\\S');
 
   return {
-    h: () => window.cursor.moveLeft(),
-    l: () => window.cursor.moveRight(),
-    j: () => window.cursor.moveDown(),
-    k: () => window.cursor.moveUp(),
-    $: window.cursor.moveToEOL,
-    G: () => window.cursor.update((cursor) => { cursor.y = window.getLines().length - 1; }),
-    gg: () => window.cursor.update((cursor) => { cursor.y = 0; }),
-    '0': () => window.cursor.moveTo(window.cursor.y, 0),
+    h: () => cursor.moveLeft(),
+    l: () => cursor.moveRight(),
+    j: () => cursor.moveDown(),
+    k: () => cursor.moveUp(),
+    $: cursor.moveToEOL,
+    G: () => cursor.update((cursor) => { cursor.y = window.getLines().length - 1; }),
+    gg: () => cursor.update((cursor) => { cursor.y = 0; }),
+    '0': () => cursor.moveTo(cursor.y, 0),
     '^': () => {
       const nonSpaceMatch = /\S/.exec(window.getCurrentLine());
       if (nonSpaceMatch) {
-        window.cursor.moveTo(window.cursor.y, nonSpaceMatch.index);
+        cursor.moveTo(cursor.y, nonSpaceMatch.index);
       } else {
-        window.cursor.moveToEOL();
+        cursor.moveToEOL();
       }
     },
     e: () => jumpOverMatch(endOfWord, false),

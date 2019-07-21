@@ -21,7 +21,8 @@ export default function createStatusLine({ getCurrentMode, window }: StatusLineA
       ...createSegment(getCurrentMode().toUpperCase(), modeMods),
       ...createSegment(' | ', statusLineMods),
     ];
-    const rightSegment = createSegment(`${window.cursor.y}:${window.cursor.x}`, statusLineMods);
+    const cursor = window.getCursor();
+    const rightSegment = createSegment(`${cursor.y}:${cursor.x}`, statusLineMods);
 
     const fileNameSpace = Math.max(0, buffer[0].length - leftSegment.length - rightSegment.length);
     const fileName = window.file || '';

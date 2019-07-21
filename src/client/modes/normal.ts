@@ -31,7 +31,7 @@ export default loopingMode('normal', (state) => {
         await commandMode(state);
       },
       [other]: (ch, key) => {
-        log(util.inspect(ch), key);
+        log(util.inspect(ch), util.inspect(key));
       },
       ...movement(state),
       ...inserts(state),

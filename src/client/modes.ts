@@ -1,5 +1,5 @@
 import normalMode from './modes/normal';
-import { other, next } from './keyboardProcessor';
+import { other, next, Key } from './keyboardProcessor';
 import { State } from './';
 
 // TODO:
@@ -8,7 +8,7 @@ import { State } from './';
 
 export const initialMode = normalMode;
 
-type ProcessKey = (ch: string, key: string) => Promise<unknown>;
+type ProcessKey = (ch: string, key: Key) => Promise<unknown> | void;
 
 export interface KeyMap {
   [key: string]: ProcessKey | KeyMap
@@ -91,10 +91,9 @@ function mapToTree(map: KeyMap) {
     .reduce((leftTree: KeyTree, rightTree: KeyTree) => mergeTrees(leftTree, rightTree), {});
 }
 
-type KeyProcessor = (() => Promise<unknown>) | ProcessKey;
 interface KeyProcessorMap {
-  [key: string]: KeyProcessor;
-  [other]?: KeyProcessor;
+  [key: string]: ProcessKey;
+  [other]?: ProcessKey;
 }
 
 /**
@@ -158,14 +157,16 @@ function treeToKeyProcessor(tree: KeyTree): KeyProcessor {
     }
   };
 }
+
+type KeyProcessor = () => Promise<unknown>;
 /**
  * Creates a mode processor function from a keymap.
  */
-export function fromKeyMap(map: KeyMap) {
+export function fromKeyMap(map: KeyMap) : KeyProcessor {
   return treeToKeyProcessor(mapToTree(map));
 }
 
-export type ProcessorFactory = (state: State, exit: () => void) => () => Promise<void>
+export type ProcessorFactory = (state: State, exit: () => void) => () => Promise<unknown> | void
 /**
  * Creates a mode that keeps active until explicitely closed.
  *

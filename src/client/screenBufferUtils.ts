@@ -15,7 +15,7 @@ export function fillLine(line: Line, text: string, {
     modifiers = new Set(),
     filler = ' ',
     fillerModifiers = new Set(),
-  }: $Shape<FillLineOpts> = {}) {
+  }: Partial<FillLineOpts> = {}) {
   const numChars = Math.min(line.length, text.length);
   let i = 0;
   for (; i < numChars; i += 1) {
@@ -32,8 +32,8 @@ export function fillLine(line: Line, text: string, {
 /**
  * Creates a fixed-length text segment.
  */
-export function fixedLength(text: string, length: number, opts: $Shape<FillLineOpts>) {
-  const line = Array.from(new Array(length), () => ({ ch: ' ', modifiers: new Set() }));
+export function fixedLength(text: string, length: number, opts: Partial<FillLineOpts>) {
+  const line : Line = Array.from(new Array(length), () => ({ ch: ' ', modifiers: new Set() }));
   return fillLine(line, text, opts);
 }
 

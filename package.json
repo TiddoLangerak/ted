@@ -14,7 +14,6 @@
     "@types/ansi-escapes": "^4.0.0",
     "@types/ansi-styles": "^3.2.1",
     "@types/copy-paste": "^1.1.30",
-    "@types/keypress": "^2.0.30",
     "@types/mkdirp": "^0.5.2",
     "@types/node": "^12.6.8",
     "@types/uuid": "^3.4.5",

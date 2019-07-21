@@ -1,45 +1,46 @@
-import { diffTypes } from '../../diff';
+import { DiffType, InsertDiff } from '../../diff';
 import insertMode from '../modes/insert';
 import { State } from '../';
 
 export default (state: State) => {
   const { window, contentManager } = state;
+  const cursor = window.getCursor();
   return {
     i: async () => {
       await insertMode(state);
     },
     a: async () => {
-      window.cursor.moveRight();
+      cursor.moveRight();
       await insertMode(state);
     },
     A: async () => {
-      window.cursor.moveToEOL();
+      cursor.moveToEOL();
       await insertMode(state);
     },
     o: async () => {
-      const diff = {
-        type: diffTypes.INSERT,
-        line: window.cursor.y,
-        column: window.lineLength(window.cursor.y),
+      const diff : InsertDiff = {
+        type: DiffType.INSERT,
+        line: cursor.y,
+        column: window.lineLength(cursor.y),
         text: '\n',
       };
       contentManager.processClientDiff(diff);
       // When we're at EOL then the newline gets inserted *before* the cursor, so it already moves
       // one line down in the diff processing. Therefore we can't move down when we're at EOL
-      if (!window.cursor.eol) {
-        window.cursor.moveDown();
+      if (!cursor.eol) {
+        cursor.moveDown();
       }
       await insertMode(state);
     },
     O: async () => {
-      const diff = {
-        type: diffTypes.INSERT,
-        line: window.cursor.y,
+      const diff : InsertDiff = {
+        type: DiffType.INSERT,
+        line: cursor.y,
         column: 0,
         text: '\n',
       };
       contentManager.processClientDiff(diff);
-      window.cursor.moveUp();
+      cursor.moveUp();
       await insertMode(state);
     },
   };

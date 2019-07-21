@@ -1,6 +1,12 @@
 import keypress from 'keypress';
 import { stdin } from './stdio';
 
+export interface Key {
+  ctrl: boolean;
+  meta: boolean;
+  sequence: string;
+}
+
 /**
  * Returns a ctrl+<char> unicode value for a given <char>
  *
@@ -24,12 +30,19 @@ export function alt(c: string) {
   return `\u001b${c}`;
 }
 
-const presses = [];
-const callbacks = [];
+interface KeyPress {
+  ch: string;
+  key: Key;
+}
+
+type KeyPressCallback = (keyPress: KeyPress) => unknown;
+
+const presses: KeyPress[] = [];
+const callbacks: KeyPressCallback[] = [];
 
 function flushQueue() {
   while (callbacks.length && presses.length) {
-    callbacks.pop()(presses.pop());
+    callbacks.pop()!(presses.pop()!);
   }
 }
 
@@ -44,9 +57,9 @@ function flushQueue() {
  * first scheduled call to next, and any calls to peek that were scheduled *before*
  * the first `next`.
  */
-export function next() {
+export function next(): Promise<KeyPress> {
   if (presses.length) {
-    return presses.pop();
+    return Promise.resolve(presses.pop()!);
   }
   return new Promise(resolve => callbacks.unshift(resolve));
 }
@@ -61,9 +74,9 @@ export function next() {
  * first scheduled call to next, and any calls to peek that were scheduled *before*
  * the first `next`.
  */
-export function peek() {
+export function peek(): Promise<KeyPress> {
   if (presses.length) {
-    return presses[presses.length - 1];
+    return Promise.resolve(presses[presses.length - 1]);
   }
   return new Promise((resolve) => {
     callbacks.unshift((res) => {
@@ -74,7 +87,7 @@ export function peek() {
 }
 
 
-function keyProcessor(ch, key) {
+function keyProcessor(ch: string, key: Key) {
   presses.unshift({ ch, key });
   flushQueue();
 }

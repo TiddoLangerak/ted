@@ -1,34 +1,35 @@
 import { copy, paste } from 'copy-paste';
-import { diffTypes } from '../../diff';
+import { DiffType, InsertDiff } from '../../diff';
 import promisify from '../../promisify';
 import { State } from '../';
 
 
 export default ({ window, contentManager }: State) => {
+  const cursor = window.getCursor();
   async function processPaste(beforeCursor = false) {
     const text : string = await promisify(cb => paste(cb));
     if (!beforeCursor) {
       // When we want to paste after the cursor we just move our cursor one place to the right
       // and then paste before it
-      window.cursor.moveRight();
+      cursor.moveRight();
     }
 
     // When we paste whole lines we don't want to paste them in the middle of the current line.
     // Instead we will make sure they end up on their own lines by moving the cursor to the start
     // of the line (or next line when we want to paste after)
     const isBlock = text.charAt(text.length - 1) === '\n';
-    const pasteAtEnd = isBlock && window.getLines().length === window.cursor.y + 1;
+    const pasteAtEnd = isBlock && window.getLines().length === cursor.y + 1;
     if (isBlock) {
-      window.cursor.moveToStartOfLine();
+      cursor.moveToStartOfLine();
       if (!beforeCursor) {
-        window.cursor.moveDown();
+        cursor.moveDown();
       }
     }
 
-    const diff = {
-      type: diffTypes.INSERT,
-      line: window.cursor.y,
-      column: window.cursor.x,
+    const diff: InsertDiff = {
+      type: DiffType.INSERT,
+      line: cursor.y,
+      column: cursor.x,
       text,
     };
     if (pasteAtEnd) {
@@ -41,11 +42,11 @@ export default ({ window, contentManager }: State) => {
     // Select the last character of the paste (as if we had just inserted it manually and went back
     // d
     // to normal mode)
-    window.cursor.moveLeft();
+    cursor.moveLeft();
 
     // In block mode we want to select the first character of the pasted text instead
     if (isBlock) {
-      window.cursor.update((cursor) => {
+      cursor.update((cursor) => {
         cursor.x = diff.column;
         cursor.y = diff.line;
       });
@@ -53,7 +54,7 @@ export default ({ window, contentManager }: State) => {
   }
   return {
     yy: () => {
-      const line = window.getLines()[window.cursor.y];
+      const line = window.getLines()[cursor.y];
       copy(`${line}\n`);
     },
     P: () => {

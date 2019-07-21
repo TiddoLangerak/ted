@@ -1,6 +1,6 @@
 import { copy } from 'copy-paste';
 import { keys, next, peek } from '../keyboardProcessor';
-import { diffTypes } from '../../diff';
+import { DiffType, DeleteDiff } from '../../diff';
 import search from './search';
 import movement from './movement';
 import { fromKeyMap } from '../modes';
@@ -11,6 +11,7 @@ async function deleteMovement(state: State) {
   const firstChar = ch;
 
   const { window } = state;
+  const cursor = window.getCursor();
   const deleteMotionProcessor = fromKeyMap({
     ...search(state),
     ...movement(state),
@@ -19,20 +20,21 @@ async function deleteMovement(state: State) {
   await deleteMotionProcessor();
   // Some movements behave a bit different when used as deletion, so we fixup those here
   if ('eEft'.indexOf(firstChar) !== -1) {
-    window.cursor.moveRight();
+    cursor.moveRight();
   }
 }
 
 export async function deleteUnderMovement(state: State) {
   const { window, contentManager } = state;
+  const cursor = window.getCursor();
   let from = {
-    line: window.cursor.y,
-    column: window.cursor.x,
+    line: cursor.y,
+    column: cursor.x,
   };
   await deleteMovement(state);
   let to = {
-    line: window.cursor.y,
-    column: window.cursor.x,
+    line: cursor.y,
+    column: cursor.x,
   };
   // If this is a backwards deletion then we need to swap to and from.
   if (to.line < from.line || (to.line === from.line && to.column < from.column)) {
@@ -40,8 +42,8 @@ export async function deleteUnderMovement(state: State) {
     to = from;
     from = temp;
   }
-  const diff = {
-    type: diffTypes.DELETE,
+  const diff : DeleteDiff = {
+    type: DiffType.DELETE,
     from,
     to,
     text: window.getText(from, to),
@@ -50,24 +52,25 @@ export async function deleteUnderMovement(state: State) {
 }
 
 export function removeLine({ window, contentManager }: State) {
-  const line = window.getLines()[window.cursor.y];
+  const cursor = window.getCursor();
+  const line = window.getLines()[cursor.y];
   copy(`${line}\n`);
   const from = {
-    line: window.cursor.y,
+    line: cursor.y,
     column: 0,
   };
   const to = {
-    line: window.cursor.y + 1,
+    line: cursor.y + 1,
     column: 0,
   };
   // If this is the last line then we want to remove the trailing newline as well, so we extent
   // the range slightly
-  if (window.getLines().length - 1 === window.cursor.y && window.cursor.y !== 0) {
+  if (window.getLines().length - 1 === cursor.y && cursor.y !== 0) {
     from.line -= 1;
     from.column = window.lineLength(from.line);
   }
-  const diff = {
-    type: diffTypes.DELETE,
+  const diff : DeleteDiff = {
+    type: DiffType.DELETE,
     from,
     to,
     text: window.getText(from, to),

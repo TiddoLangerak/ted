@@ -20,7 +20,7 @@ registerDrawable('COMMAND_LINE', (buffer) => {
   fillLine(buffer[0], commandDispatcher.command);
 });
 
-export function registerCommand(name: string, action: () => mixed) {
+export function registerCommand(name: string, action: () => unknown) {
   commands.set(name, action);
 }
 
