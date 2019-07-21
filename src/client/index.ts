@@ -34,12 +34,23 @@ import { ContentManager } from './contentManager';
       cwd: process.cwd(),
       detached: true,
     });
+    server.on('exit', () => {
+      const msg = `Server died. Check server logs for debugging. File: ${SERVER_LOG_PATH}`;
+      error(msg);
+      console.error(msg);
+      process.exit(1);
+    });
     server.unref();
+    let timeout = setTimeout(() => {
+      console.error("Server did not come online in 5 seconds. Terminating");
+      process.exit(1);
+    }, 5000);
     await new Promise((resolve) => {
       const interval = setInterval(() => {
         fs.access(SOCKET_PATH, fs.constants.F_OK, (err) => {
           if (!err) {
             clearInterval(interval);
+            clearTimeout(timeout);
             resolve();
           }
         });

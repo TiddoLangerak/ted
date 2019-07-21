@@ -1,4 +1,3 @@
-import 'babel-polyfill';
 import net, { Socket } from 'net';
 import mkdirp from 'mkdirp';
 import path from 'path';
