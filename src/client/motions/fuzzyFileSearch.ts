@@ -1,10 +1,10 @@
 import subScreen from '../subScreen';
 import { draw } from '../screen';
 import { ctrl, alt } from '../keyboardProcessor';
-import type { State } from '../';
+import { State } from '../';
 
 export default ({ contentManager }: State) => {
-  function searchWith(program, args = []) {
+  function searchWith(program: string, args = []) {
     const child = subScreen(program, args, {
       cwd: process.cwd(),
       // We allow stderr to be used to draw on, and we assume stdout will be used to place
@@ -12,7 +12,7 @@ export default ({ contentManager }: State) => {
       stdio: [process.stdin, 'pipe', process.stderr],
     });
     let file = '';
-    child.stdout.on('data', (data) => { file += data; });
+    child.stdout!.on('data', (data) => { file += data; });
     child.on('close', () => {
       if (file.trim()) {
         contentManager.changeFile(file);

@@ -2,16 +2,15 @@ import { draw, registerDrawable } from './screen';
 import { fillLine } from './screenBufferUtils';
 import { applyDiff, diffTypes, extractText } from '../diff';
 import createCursor from './Cursor';
-import type { Cursor } from './Cursor';
-
-import type { Loc, Diff } from '../diff';
+import { Cursor } from './Cursor';
+import { Loc, Diff } from '../diff';
 
 export type Window = {
   getContent() : string,
   setContent(string) : void,
   getLines() : string[],
   getCurrentLine() : string,
-  lineLength(number) : number,
+  lineLength(lineNum: number) : number,
   getText(from: Loc, to: Loc) : string,
   processDiff(diff: Diff) : void,
   file: string,

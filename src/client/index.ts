@@ -15,13 +15,13 @@ import { initialMode } from './modes';
 import StatusLine from './statusLine';
 import { registerCommand } from './commandDispatcher';
 import promisify from '../promisify';
-import type { Window } from './window';
-import type { ContentManager } from './contentManager';
+import { Window } from './window';
+import { ContentManager } from './contentManager';
 
 export type State = {
   window: Window,
   contentManager: ContentManager,
-  setCurrentMode(string) : void
+  setCurrentMode(mode: string) : void
 };
 
 (async function run() {

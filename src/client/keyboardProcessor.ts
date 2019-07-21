@@ -85,7 +85,7 @@ export const keys = {
 };
 
 // TODO: remove any type when flow has proper support for symbols
-export const other : any = Symbol('other');
+export const other : unique symbol = Symbol('other');
 
 
 /**

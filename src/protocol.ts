@@ -1,36 +1,28 @@
 import net from 'net';
-import type { Diff } from './diff';
+import { Diff } from './diff';
 
-export type MessageTypes = {
-  RPC: 'rpc',
-  EVENT: 'event',
-  BUFFER: 'buffer',
-  ERROR: 'error',
-  DIFF: 'diff'
-};
-
-export const messageTypes : MessageTypes = {
-  RPC: 'rpc',
-  EVENT: 'event',
-  BUFFER: 'buffer',
-  ERROR: 'error',
-  DIFF: 'diff',
+export enum MessageType {
+  RPC= 'rpc',
+  EVENT= 'event',
+  BUFFER= 'buffer',
+  ERROR= 'error',
+  DIFF= 'diff'
 };
 
 export type RPCMessage = {
-  type: 'rpc',
+  type: MessageType.RPC,
   action: string,
-  arguments?: mixed
+  arguments?: unknown
 };
 
 export type EventMessage = {
-  type: 'event',
+  type: MessageType.EVENT
   event: string,
   file: string
 };
 
 export type BufferMessage = {
-  type: 'buffer',
+  type: MessageType.BUFFER,
   buffer: {
     filePath: string,
     content: string,
@@ -40,12 +32,12 @@ export type BufferMessage = {
 }
 
 export type ErrorMessage = {
-  type: 'error',
+  type: MessageType.ERROR,
   message: string
 };
 
 export type DiffMessage = {
-  type: 'diff',
+  type: MessageType.DIFF,
   file: string,
   diff: Diff,
   isDirty?: boolean,
@@ -54,7 +46,7 @@ export type DiffMessage = {
 
 type Message = RPCMessage | EventMessage | BufferMessage | ErrorMessage | DiffMessage;
 
-export function messageParser(onMessage: Message => mixed) {
+export function messageParser(onMessage: (message: Message) => unknown) {
   let buffer = '';
   return (data: string) => {
     buffer += data;

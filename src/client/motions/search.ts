@@ -1,11 +1,11 @@
 import { other } from '../keyboardProcessor';
 import { isCharKey } from './utils';
-import type { State } from '../';
+import { State } from '../';
 
 export default ({ window }: State) => {
-  function searchMotion(searchFunc) {
+  function searchMotion(searchFunc: (char: string) => unknown) {
     return {
-      [other]: (ch, key) => {
+      [other]: (ch: string, key: string) => {
         if (isCharKey(ch, key)) {
           searchFunc(ch);
         }

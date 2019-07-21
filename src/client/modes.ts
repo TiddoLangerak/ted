@@ -1,33 +1,48 @@
 import normalMode from './modes/normal';
 import { other, next } from './keyboardProcessor';
-import type { State } from './';
+import { State } from './';
+
+// TODO:
+// currently, typescript doesn't support using 'symbol' as index type, and to work around this we
+// have a large number of `any` casts in this file. These can be removed once TS supports this.
 
 export const initialMode = normalMode;
+
+type ProcessKey = (ch: string, key: string) => Promise<unknown>;
+
+export interface KeyMap {
+  [key: string]: ProcessKey | KeyMap
+  [other]?: ProcessKey | KeyMap
+};
+
+// The effective difference between KeyTree and KeyMap is that a keytree cannot contain key_sequences_ as a keys.
+// We cannot model this however in TypeScript, hence it's just an alias for now.
+type KeyTree = KeyMap;
 
 /**
  * Merges a src tree into the target tree.
  *
  * Note that this alters the target tree.
  */
-function mergeTrees(target, src, prefix = '') {
+function mergeTrees(target: KeyTree, src: KeyTree, prefix = '') {
   // Then we merge all src properties into the targed object. We do this in 2 steps:
   // First we merge the functions and in the process we do error checking.
   // Then we recursively merge all submaps
   Reflect.ownKeys(src)
-    .filter(key => typeof src[key] === 'function')
+    .filter(key => typeof src[key as any] === 'function')
     .forEach((key) => {
-      if (target[key]) {
-        throw new Error(`Key sequence "${prefix}${key}" is registered as an action, but it is also ` +
+      if (target[key as any]) {
+        throw new Error(`Key sequence "${prefix}${String(key)}" is registered as an action, but it is also ` +
                         'a prefix for other key combos.');
       }
-      target[key] = src[key];
+      target[key as any] = src[key as any];
     });
 
   Reflect.ownKeys(src)
-    .filter(key => typeof src[key] !== 'function')
+    .filter(key => typeof src[key as any] !== 'function')
     .forEach((key) => {
-      const targetObj = target[key] || {};
-      target[key] = mergeTrees(targetObj, src[key], prefix + key.toString());
+      const targetObj = target[key as any] as KeyMap || {};
+      target[key as any] = mergeTrees(targetObj, src[key as any] as KeyMap, prefix + key.toString() + ".");
     });
 
   return target;
@@ -59,25 +74,33 @@ function mergeTrees(target, src, prefix = '') {
  *   }
  * }
  */
-function mapToTree(map) {
+function mapToTree(map: KeyMap) {
   return Reflect.ownKeys(map)
-    .map((keyCombo) => {
+    .map((keyCombo) : KeyTree => {
       // We can have symbols in here as well, which we consider to be single characters.
       if (typeof keyCombo === 'string') {
-        return keyCombo.split('')
-          .reduceRight((subTree, key) => ({ [key]: subTree }), map[keyCombo]);
+        const [firstKey, ...otherKeys] = keyCombo.split('');
+        const leaf : KeyTree = { [firstKey] : map[keyCombo] };
+        return otherKeys
+          .reduceRight((subTree, key) => ({ [key]: subTree }), leaf);
       }
       return {
-        [keyCombo]: map[keyCombo],
+        [keyCombo as any]: map[keyCombo as any],
       };
     })
-    .reduce((leftTree, rightTree) => mergeTrees(leftTree, rightTree), {});
+    .reduce((leftTree: KeyTree, rightTree: KeyTree) => mergeTrees(leftTree, rightTree), {});
+}
+
+type KeyProcessor = (() => Promise<unknown>) | ProcessKey;
+interface KeyProcessorMap {
+  [key: string]: KeyProcessor;
+  [other]?: KeyProcessor;
 }
 
 /**
  * Transforms a key-tree to an async processor function that can be used by the keyboard processor.
  */
-function treeToKeyProcessor(tree) {
+function treeToKeyProcessor(tree: KeyTree): KeyProcessor {
   // We transform the key-tree into a "tree" of async functions that can delegate to each other.
   // Each key will be represented by an async function, and async functions will `await` to
   // subsequent async functions. E.g. for the motion 'abc' there will be an async function
@@ -113,13 +136,14 @@ function treeToKeyProcessor(tree) {
 
   // To get the desired result we first need to (recursively) get the sub
   // processors for each defined key
-  const subProcessors = {};
+  const subProcessors : KeyProcessorMap = {};
   Reflect.ownKeys(tree)
     .forEach((key) => {
-      if (typeof tree[key] === 'function') {
-        subProcessors[key] = tree[key];
+      const keyNode = tree[key as any];
+      if (typeof keyNode === 'function') {
+        subProcessors[key as any] = keyNode;
       } else {
-        subProcessors[key] = treeToKeyProcessor(tree[key]);
+        subProcessors[key as any] = treeToKeyProcessor(keyNode);
       }
     });
 
@@ -134,10 +158,6 @@ function treeToKeyProcessor(tree) {
     }
   };
 }
-
-export type KeyMap = {
-  [string]: KeyMap | (ch: string, key: string) => Promise<mixed> | mixed
-};
 /**
  * Creates a mode processor function from a keymap.
  */

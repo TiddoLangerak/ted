@@ -1,6 +1,6 @@
 import { diffTypes } from '../../diff';
 import insertMode from '../modes/insert';
-import type { State } from '../';
+import { State } from '../';
 
 export default (state: State) => {
   const { window, contentManager } = state;

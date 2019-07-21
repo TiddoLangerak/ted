@@ -1,7 +1,7 @@
 import styles from 'ansi-styles';
 import { draw, registerDrawable } from './screen';
 import { stdout } from './stdio';
-import type { Window } from './window';
+import { Window } from './window';
 
 export const anchors = {
   EOL: '$',
@@ -14,7 +14,7 @@ export type BufferCoordinates = {
 
 export type Cursor = BufferCoordinates & {
   eol: boolean,
-  update(Cursor => mixed) : void,
+  update(f: (cursor: Cursor) => unknown) : void,
   moveTo(x: number, y: number) : void,
   moveLeft(amount?: number) : void,
   moveRight(amount?: number) : void,

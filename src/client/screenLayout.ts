@@ -37,4 +37,4 @@ export default ([
       },
     ],
   },
-]: Layer[]);
+] as Layer[]);

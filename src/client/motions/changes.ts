@@ -1,7 +1,7 @@
 import { keys, next, peek } from '../keyboardProcessor';
 import { removeLine, deleteUnderMovement } from './deletions';
 import insertMode from '../modes/insert';
-import type { State } from '../';
+import { State } from '../';
 
 export default (state: State) =>
   // TODO: deduplicate
@@ -13,7 +13,7 @@ export default (state: State) =>
          next();
          removeLine(state);
          await insertMode(state);
-       } else if (ch !== keys.escape) {
+       } else if (ch !== keys.ESCAPE) {
          await deleteUnderMovement(state);
          await insertMode(state);
        }

@@ -4,9 +4,9 @@ import { diffTypes } from '../../diff';
 import search from './search';
 import movement from './movement';
 import { fromKeyMap } from '../modes';
-import type { State } from '../';
+import { State } from '../';
 
-async function deleteMovement(state) {
+async function deleteMovement(state: State) {
   const { ch } = await peek();
   const firstChar = ch;
 
@@ -82,7 +82,7 @@ export default (state: State) => ({
         // We now do want to pop the character, so we can call next.
       next();
       removeLine(state);
-    } else if (ch !== keys.escape) {
+    } else if (ch !== keys.ESCAPE) {
       await deleteUnderMovement(state);
     }
   },

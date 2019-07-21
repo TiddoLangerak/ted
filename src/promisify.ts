@@ -1,5 +1,6 @@
-export type NodeCallback<R, E> = (err: E, result: R) => void;
-export default function promisify<R, E>(func: (NodeCallback<R, E>) => void): Promise<R> {
+export type NodeCallback<R, E> = (err: E, result: R) => unknown;
+
+export default function promisify<R, E>(func: (cb: NodeCallback<R, E>) => unknown): Promise<R> {
   return new Promise((resolve, reject) => {
     func((err, res) => {
       if (err) {

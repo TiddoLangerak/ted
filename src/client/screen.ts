@@ -167,7 +167,7 @@ export function draw(immediate: boolean = false, forceRedraw: boolean = false) {
   drawBuffer(buffer, forceRedraw);
 }
 
-export function registerDrawable(name: string, drawFunction: Buffer => mixed) {
+export function registerDrawable(name: string, drawFunction: (buff: Buffer) => mixed) {
   drawables.set(name, drawFunction);
 }
 

@@ -1,4 +1,4 @@
-import type { Line, Buffer, Modifier } from './screen';
+import { Line, Buffer, Modifier } from './screen';
 
 export type FillLineOpts = {
   modifiers: Set<Modifier>,

@@ -1,7 +1,7 @@
 import { copy, paste } from 'copy-paste';
 import { diffTypes } from '../../diff';
 import promisify from '../../promisify';
-import type { State } from '../';
+import { State } from '../';
 
 
 export default ({ window, contentManager }: State) => {
