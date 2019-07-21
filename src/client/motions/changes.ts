@@ -1,4 +1,3 @@
-/* @flow */
 import { keys, next, peek } from '../keyboardProcessor';
 import { removeLine, deleteUnderMovement } from './deletions';
 import insertMode from '../modes/insert';

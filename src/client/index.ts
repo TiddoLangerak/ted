@@ -1,4 +1,3 @@
-/* @flow */
 import net from 'net';
 import path from 'path';
 import { spawn } from 'child_process';

@@ -1,4 +1,3 @@
-/* @flow */
 import keypress from 'keypress';
 import { stdin } from './stdio';
 

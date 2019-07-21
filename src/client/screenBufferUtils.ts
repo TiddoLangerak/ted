@@ -1,4 +1,3 @@
-/* @flow */
 import type { Line, Buffer, Modifier } from './screen';
 
 export type FillLineOpts = {

@@ -1,4 +1,3 @@
-/* @flow */
 import normalMode from './modes/normal';
 import { other, next } from './keyboardProcessor';
 import type { State } from './';

@@ -1,4 +1,3 @@
-/* @flow */
 import fs from 'fs';
 import net from 'net';
 import { SOCKET_PATH } from './paths';

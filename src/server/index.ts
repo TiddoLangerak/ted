@@ -1,4 +1,3 @@
-/* @flow */
 import 'babel-polyfill';
 import net from 'net';
 import mkdirp from 'mkdirp';

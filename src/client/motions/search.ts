@@ -1,4 +1,3 @@
-/* @flow */
 import { other } from '../keyboardProcessor';
 import { isCharKey } from './utils';
 import type { State } from '../';

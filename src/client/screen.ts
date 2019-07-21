@@ -1,4 +1,3 @@
-/* @flow */
 import escapes from 'ansi-escapes';
 import layout from './screenLayout';
 import { ttyOut } from './stdio';

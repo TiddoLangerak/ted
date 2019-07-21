@@ -1,4 +1,3 @@
-/* @flow */
 import { createFileBuffer } from './buffer';
 
 const cache = new Map();

@@ -1,5 +1,3 @@
-/* @flow */
-
 import { registerDrawable } from './screen';
 import { error } from './screenLogger';
 import { fillLine } from './screenBufferUtils';

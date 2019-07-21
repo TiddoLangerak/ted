@@ -1,4 +1,3 @@
-/* @flow */
 const EDITOR = ['CONTENT', 'CURSOR'];
 
 export type Buffer = {

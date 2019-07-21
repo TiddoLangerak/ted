@@ -1,4 +1,3 @@
-/* @flow */
 import path from 'path';
 
 const home = process.env.HOME || '/tmp';

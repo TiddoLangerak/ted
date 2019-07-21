@@ -1,5 +1,3 @@
-/* @flow */
-
 export const diffTypes = {
   INSERT: 'insert',
   DELETE: 'delete',

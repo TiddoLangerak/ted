@@ -1,4 +1,3 @@
-/* @flow */
 import uuid from 'uuid';
 import path from 'path';
 import net from 'net';

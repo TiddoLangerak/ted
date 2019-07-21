@@ -1,4 +1,3 @@
-/* @flow */
 import commandDispatcher from '../commandDispatcher';
 import { draw } from '../screen';
 import { keys, other } from '../keyboardProcessor';

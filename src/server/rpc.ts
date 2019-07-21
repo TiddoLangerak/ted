@@ -1,4 +1,3 @@
-/* @flow */
 import uuid from 'uuid';
 import net from 'net';
 import { sendMessage, messageTypes } from '../protocol';

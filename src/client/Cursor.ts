@@ -1,4 +1,3 @@
-/* @flow */
 import styles from 'ansi-styles';
 import { draw, registerDrawable } from './screen';
 import { stdout } from './stdio';

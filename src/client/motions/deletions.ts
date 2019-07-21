@@ -1,4 +1,3 @@
-/* @flow */
 import { copy } from 'copy-paste';
 import { keys, next, peek } from '../keyboardProcessor';
 import { diffTypes } from '../../diff';

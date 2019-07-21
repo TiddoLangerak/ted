@@ -1,4 +1,3 @@
-/* @flow */
 import { diffTypes } from '../../diff';
 import insertMode from '../modes/insert';
 import type { State } from '../';

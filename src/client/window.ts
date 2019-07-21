@@ -1,4 +1,3 @@
-/* @flow */
 import { draw, registerDrawable } from './screen';
 import { fillLine } from './screenBufferUtils';
 import { applyDiff, diffTypes, extractText } from '../diff';

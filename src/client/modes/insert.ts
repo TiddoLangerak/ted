@@ -1,4 +1,3 @@
-/* @flow */
 import { keys, other } from '../keyboardProcessor';
 import { diffTypes } from '../../diff';
 import { isCharKey } from '../motions/utils';

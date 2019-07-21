@@ -1,5 +1,3 @@
-/* @flow */
-
 // eslint-disable-next-line import/prefer-default-export
 export function isCharKey(ch: string, key: string) {
   let isChar = true;

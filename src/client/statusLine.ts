@@ -1,4 +1,3 @@
-/* @flow */
 import styles from 'ansi-styles';
 import { registerDrawable } from './screen';
 import { createSegment, fixedLength, writeIntoBuffer } from './screenBufferUtils';

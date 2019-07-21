@@ -1,4 +1,3 @@
-/* @flow */
 import subScreen from '../subScreen';
 import { draw } from '../screen';
 import { ctrl, alt } from '../keyboardProcessor';

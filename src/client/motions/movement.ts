@@ -1,4 +1,3 @@
-/* @flow */
 import { wordCharacter, not, compilePattern, oneOf } from '../../patterns';
 import type { State } from '../';
 

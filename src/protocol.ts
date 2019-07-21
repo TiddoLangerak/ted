@@ -1,4 +1,3 @@
-/* @flow */
 import net from 'net';
 import type { Diff } from './diff';
 

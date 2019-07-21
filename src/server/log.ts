@@ -1,5 +1,3 @@
-/* @flow */
-
 function getPrefix(level) {
   const dateString = (new Date()).toLocaleString('en-GB', { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
   const upperLevel = level.toUpperCase();

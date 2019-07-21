@@ -1,4 +1,3 @@
-/* @flow */
 import fs from 'fs';
 import promisify from '../promisify';
 import { applyDiff, invertDiff } from '../diff';

@@ -1,4 +1,3 @@
-/* @flow */
 import { spawn } from 'child_process';
 import { stdout, stdin, stderr } from './stdio';
 import { draw, startAlternateBuffer } from './screen';

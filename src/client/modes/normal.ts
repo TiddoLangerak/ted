@@ -1,4 +1,3 @@
-/* @flow */
 import util from 'util';
 import search from '../motions/search';
 import movement from '../motions/movement';

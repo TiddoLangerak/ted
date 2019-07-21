@@ -1,5 +1,3 @@
-/* @flow */
-
 /* eslint-disable no-underscore-dangle */
 import { Transform } from 'stream';
 import type { ReadStream, WriteStream } from 'tty';

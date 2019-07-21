@@ -1,4 +1,3 @@
-/* @flow */
 import { copy, paste } from 'copy-paste';
 import { diffTypes } from '../../diff';
 import promisify from '../../promisify';
