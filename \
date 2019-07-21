@@ -37,21 +37,21 @@ export function clearLog() {
 
 const logBg = styles.bgBlack;
 type Modifiers = {
-  [K in LogLevel]?: Set<EscapeCode.CodePair>;
+  [K in LogLevel]?: Set<EscapeCode.CodePair>
 }
 
-const modifiers: Modifiers= {
+const modifiers = {
+  default: new Set([logBg]),
   log: new Set([logBg]),
   error: new Set([styles.red, logBg]),
 };
-const defaultModifiers = new Set([logBg]);
 
 registerDrawable('LOG', (buffer) => {
   if (logs.length) {
     // -1 because of the header
     const virtualStart = buffer.length - logs.length - 1;
     const start = Math.max(0, virtualStart);
-    fillLine(buffer[start], '---LOG---', { modifiers: defaultModifiers, fillerModifiers: defaultModifiers });
+    fillLine(buffer[start], '---LOG---', { modifiers: modifiers.default, fillerModifiers: modifiers.default });
     logs
       .filter((msg, idx) =>
         // We need to filter out those logs that are drawn above the visible viewport.
@@ -60,7 +60,7 @@ registerDrawable('LOG', (buffer) => {
       .forEach((msg, idx) => {
         fillLine(buffer[start + 1 + idx],
           msg.msg,
-          { modifiers: modifiers[msg.type], fillerModifiers: defaultModifiers },
+          { modifiers: modifiers[msg.type], fillerModifiers: modifiers.default },
         );
       });
   }

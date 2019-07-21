@@ -49,7 +49,7 @@ export default function createCursor(window: Window): Cursor {
     eol: false,
     x: 0,
     y: 0,
-    update(updateFunc: (Cursor) => mixed) {
+    update(updateFunc: (cursor: Cursor) => unknown) {
       updateFunc(cursor);
       // Note: both for y and x the min call must be done before the max call, since
       // it is possible that a negative number comes out of the Math.min call

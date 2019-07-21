@@ -25,7 +25,7 @@ export function not(pattern: string) {
 }
 
 const regexpCache = new Map();
-export function compilePattern(pattern: string, flags?: RegExp$flags): RegExp {
+export function compilePattern(pattern: string, flags?: RegExp["flags"]): RegExp {
   const regexp = `/${pattern}/${flags || ''}`;
   let compiled = regexpCache.get(regexp);
   if (!compiled) {

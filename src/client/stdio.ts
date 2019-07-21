@@ -1,10 +1,10 @@
 /* eslint-disable no-underscore-dangle */
-import { Transform } from 'stream';
+import { Transform, TransformCallback } from 'stream';
 import { ReadStream, WriteStream } from 'tty';
 
 class StdIo extends Transform {
   // eslint-disable-next-line class-methods-use-this
-  _transform(chunk, enc, done) {
+  _transform(chunk: unknown, enc: string, done: TransformCallback) {
     done(null, chunk);
   }
 }
@@ -62,9 +62,9 @@ class StdWritable extends StdIo {
   }
 }
 
-export const stdin = new StdReadable(process.stdin);
-export const stdout = new StdWritable(process.stdout);
-export const stderr = new StdWritable(process.stderr);
+export const stdin = new StdReadable(process.stdin as ReadStream);
+export const stdout = new StdWritable(process.stdout as WriteStream);
+export const stderr = new StdWritable(process.stderr as WriteStream);
 
 let _ttyOut = stdout;
 // We need to fallback to stderr if stdout is not a tty

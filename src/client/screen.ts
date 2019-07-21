@@ -1,6 +1,8 @@
 import escapes from 'ansi-escapes';
 import layout from './screenLayout';
 import { ttyOut } from './stdio';
+import { Layer } from "./screenLayout";
+import { assertUnreachable } from "../assertUnreachable";
 
 export type Modifier = {
   open: string,
@@ -19,15 +21,15 @@ let isInitialized = false;
 
 
 // This will be used to keep track of what is already drawn on screen
-let currentRows = [];
-function drawBuffer(buffer, forceRedraw = false) {
-  const rows = [];
+let currentRows : string[] = [];
+function drawBuffer(buffer: Buffer, forceRedraw = false) {
+  const rows : string[] = [];
   buffer.forEach((row, idx) => {
     const rowTokens = [
       escapes.cursorTo(0, idx),
       escapes.eraseLine,
     ];
-    let modifiers = new Set();
+    let modifiers : Set<Modifier> = new Set();
     row.forEach((cel) => {
       modifiers.forEach((currentMod) => {
         if (!cel.modifiers.has(currentMod)) {
@@ -69,7 +71,19 @@ export function closeAlternateBuffer() {
 
 const drawables = new Map();
 
-function drawLayers(layers, buffer) {
+function getLayerSize(layer: Layer, buffer: Buffer) : number {
+  if (typeof layer === 'string') {
+    throw new Error("Cannot get the layer size for a string");
+  } else if (layer.split === 'vertical') {
+    return buffer.length;
+  } else if (layer.split === 'horizontal') {
+    return buffer[0].length;
+  } else {
+    return assertUnreachable(layer);
+  }
+}
+
+function drawLayers(layers: Layer[], buffer: Buffer) {
   layers.forEach((layer) => {
     if (typeof layer === 'string') {
       const drawable = drawables.get(layer);
@@ -80,14 +94,7 @@ function drawLayers(layers, buffer) {
     } else { // split window
       // Size of the layer in the relevant dimension. I.e. for a vertical split this is the height,
       // for a horizontal split this is the width;
-      let layerSize;
-      if (layer.split === 'vertical') {
-        layerSize = buffer.length;
-      } else if (layer.split === 'horizontal') {
-        layerSize = buffer[0].length;
-      } else {
-        throw new Error(`Split type must be either 'vertical' or 'horizontal', but '${layer.split}' was found`);
-      }
+      let layerSize = getLayerSize(layer, buffer);
 
       // Number of buffers that have an auto height
       const autoCount = layer.buffers.filter(buff => buff.size === 'auto').length;
@@ -112,7 +119,7 @@ function drawLayers(layers, buffer) {
       layer.buffers
         .reduce((screenBuffer, buff) => {
           let size = buff.size === 'auto' ? autoSize : buff.size;
-          if (size === 'auto' && autoSizeRemainder) {
+          if (buff.size === 'auto' && autoSizeRemainder) {
             size += 1;
             autoSizeRemainder -= 1;
           }
@@ -122,8 +129,8 @@ function drawLayers(layers, buffer) {
             drawLayers(buff.layers, virtualBuffer);
             return screenBuffer.slice(size);
           }  // layer.split === 'horizontal'
-          const left = [];
-          const right = [];
+          const left : Buffer = [];
+          const right : Buffer = [];
           screenBuffer.forEach((line) => {
             left.push(line.slice(0, size));
             right.push(line.slice(size));
@@ -162,12 +169,12 @@ export function draw(immediate: boolean = false, forceRedraw: boolean = false) {
   // some virtual screen in memory (e.g. an array of lines, or a matrix).
   // The screen class should then do the actual drawing.
 
-  const buffer = Array.from(new Array(ttyOut.getRows()), () => Array.from(new Array(ttyOut.getColumns()), () => ({ ch: ' ', modifiers: new Set() })));
+  const buffer : Buffer = Array.from(new Array(ttyOut.getRows()), () => Array.from(new Array(ttyOut.getColumns()), () => ({ ch: ' ', modifiers: new Set() })));
   drawLayers(layout, buffer);
   drawBuffer(buffer, forceRedraw);
 }
 
-export function registerDrawable(name: string, drawFunction: (buff: Buffer) => mixed) {
+export function registerDrawable(name: string, drawFunction: (buff: Buffer) => unknown) {
   drawables.set(name, drawFunction);
 }
 

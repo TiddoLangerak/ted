@@ -4,7 +4,7 @@ import { SOCKET_PATH } from './paths';
 import promisify from './promisify';
 
 export async function socketExists() {
-  return new Promise(resolve => fs.access(SOCKET_PATH, fs.F_OK, err => resolve(!err)));
+  return new Promise(resolve => fs.access(SOCKET_PATH, fs.constants.F_OK, err => resolve(!err)));
 }
 
 export async function socketIsActive() {
@@ -17,7 +17,7 @@ export async function socketIsActive() {
       client.end();
       resolve(true);
     });
-    client.on('error', (err) => {
+    client.on('error', (err: NodeJS.ErrnoException) => {
       // We'll get ECONNREFUSED when the socket file exists, but isn't active.
       // In that case we want to resolve with false.
       // If we get any other error then something is wrong and we need to bail.

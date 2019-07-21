@@ -1,3 +1,5 @@
+import { assertUnreachable } from "./assertUnreachable";
+
 export enum DiffType {
   INSERT= 'insert',
   DELETE= 'delete',
@@ -49,6 +51,8 @@ export function invertDiff(diff: Diff): Diff {
         text : diff.text
       };
     }
+    default:
+      return assertUnreachable(diff);
   }
 }
 
@@ -120,6 +124,8 @@ export function applyDiff(input: string | string[], diff: Diff) {
       lines.splice(diff.from.line, linesToReplace, newLine);
       break;
     }
+    default:
+      return assertUnreachable(diff);
   }
 
   return lines.join('\n');
