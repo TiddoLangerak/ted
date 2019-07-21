@@ -1,5 +1,5 @@
-import { DiffType, InsertDiff } from '../../diff';
-import insertMode from '../modes/insert';
+import { DiffType, InsertDiff } from "../../diff";
+import insertMode from "../modes/insert";
 import { State } from "../state";
 
 export default (state: State) => {
@@ -18,11 +18,11 @@ export default (state: State) => {
       await insertMode(state);
     },
     o: async () => {
-      const diff : InsertDiff = {
+      const diff: InsertDiff = {
         type: DiffType.INSERT,
         line: cursor.y,
         column: window.lineLength(cursor.y),
-        text: '\n',
+        text: "\n"
       };
       contentManager.processClientDiff(diff);
       // When we're at EOL then the newline gets inserted *before* the cursor, so it already moves
@@ -33,15 +33,15 @@ export default (state: State) => {
       await insertMode(state);
     },
     O: async () => {
-      const diff : InsertDiff = {
+      const diff: InsertDiff = {
         type: DiffType.INSERT,
         line: cursor.y,
         column: 0,
-        text: '\n',
+        text: "\n"
       };
       contentManager.processClientDiff(diff);
       cursor.moveUp();
       await insertMode(state);
-    },
+    }
   };
 };

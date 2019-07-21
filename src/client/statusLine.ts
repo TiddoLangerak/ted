@@ -1,31 +1,44 @@
-import styles from 'ansi-styles';
-import { registerDrawable } from './screen';
-import { createSegment, fixedLength, writeIntoBuffer } from './screenBufferUtils';
-import { Window } from './window';
+import styles from "ansi-styles";
+import { registerDrawable } from "./screen";
+import {
+  createSegment,
+  fixedLength,
+  writeIntoBuffer
+} from "./screenBufferUtils";
+import { Window } from "./window";
 
 type StatusLineArgs = {
-  window: Window,
-  getCurrentMode() : string
+  window: Window;
+  getCurrentMode(): string;
 };
-export default function createStatusLine({ getCurrentMode, window }: StatusLineArgs) {
+export default function createStatusLine({
+  getCurrentMode,
+  window
+}: StatusLineArgs) {
   const statusLineBg = styles.bgBlue;
   const statusLineMods = new Set([statusLineBg]);
   const modeMods = new Set([statusLineBg, styles.bold]);
   const statusLineModifiers = new Set([statusLineBg]);
   const statusLineOpts = {
     modifiers: statusLineModifiers,
-    fillerModifiers: statusLineModifiers,
+    fillerModifiers: statusLineModifiers
   };
-  registerDrawable('STATUS_LINE', (buffer) => {
+  registerDrawable("STATUS_LINE", buffer => {
     let leftSegment = [
       ...createSegment(getCurrentMode().toUpperCase(), modeMods),
-      ...createSegment(' | ', statusLineMods),
+      ...createSegment(" | ", statusLineMods)
     ];
     const cursor = window.getCursor();
-    const rightSegment = createSegment(`${cursor.y}:${cursor.x}`, statusLineMods);
+    const rightSegment = createSegment(
+      `${cursor.y}:${cursor.x}`,
+      statusLineMods
+    );
 
-    const fileNameSpace = Math.max(0, buffer[0].length - leftSegment.length - rightSegment.length);
-    const fileName = window.file || '';
+    const fileNameSpace = Math.max(
+      0,
+      buffer[0].length - leftSegment.length - rightSegment.length
+    );
+    const fileName = window.file || "";
     // We provide the second argument as well such that when fileNameSpace === 0
     // we get the empty string
     const visibleFileName = fileName.substr(-fileNameSpace, fileNameSpace);
@@ -37,8 +50,11 @@ export default function createStatusLine({ getCurrentMode, window }: StatusLineA
     const fileNameSegment = createSegment(visibleFileName, fileNameMods);
     leftSegment = [...leftSegment, ...fileNameSegment];
 
-    const fillerLength = Math.max(0, buffer[0].length - leftSegment.length - rightSegment.length);
-    const filler = fixedLength('', fillerLength, statusLineOpts);
+    const fillerLength = Math.max(
+      0,
+      buffer[0].length - leftSegment.length - rightSegment.length
+    );
+    const filler = fixedLength("", fillerLength, statusLineOpts);
 
     const statusLine = [...leftSegment, ...filler, ...rightSegment];
 

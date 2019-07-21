@@ -1,9 +1,8 @@
-import { ContentManager } from './contentManager';
+import { ContentManager } from "./contentManager";
 import { Window } from "./window";
 
 export type State = {
-  window: Window,
-  contentManager: ContentManager,
-  setCurrentMode(mode: string) : void
+  window: Window;
+  contentManager: ContentManager;
+  setCurrentMode(mode: string): void;
 };
-

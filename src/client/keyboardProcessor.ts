@@ -1,5 +1,5 @@
-import keypress from 'keypress';
-import { stdin } from './stdio';
+import keypress from "keypress";
+import { stdin } from "./stdio";
 
 export interface Key {
   ctrl: boolean;
@@ -13,9 +13,9 @@ export interface Key {
  * This does NOT compose with other functions.
  */
 export function ctrl(c: string) {
-  const charNum = c.charCodeAt(0) - 'a'.charCodeAt(0);
+  const charNum = c.charCodeAt(0) - "a".charCodeAt(0);
   if (charNum > 25) {
-    throw new Error('ctrl modifier can only be used for lowercase letters');
+    throw new Error("ctrl modifier can only be used for lowercase letters");
   }
   // See http://unicodelookup.com/#ctrl
   return String.fromCharCode(charNum + 1);
@@ -78,14 +78,13 @@ export function peek(): Promise<KeyPress> {
   if (presses.length) {
     return Promise.resolve(presses[presses.length - 1]);
   }
-  return new Promise((resolve) => {
-    callbacks.unshift((res) => {
+  return new Promise(resolve => {
+    callbacks.unshift(res => {
       presses.push(res);
       resolve(res);
     });
   });
 }
-
 
 function keyProcessor(ch: string, key: Key) {
   presses.unshift({ ch, key });
@@ -93,13 +92,12 @@ function keyProcessor(ch: string, key: Key) {
 }
 
 export const keys = {
-  BACKSPACE: '\u007f',
-  ESCAPE: '\u001b',
+  BACKSPACE: "\u007f",
+  ESCAPE: "\u001b"
 };
 
 // TODO: remove any type when flow has proper support for symbols
-export const other : unique symbol = Symbol('other');
-
+export const other: unique symbol = Symbol("other");
 
 /**
  * Starts the keyboard processing.
@@ -112,5 +110,5 @@ export const other : unique symbol = Symbol('other');
  */
 export default function start() {
   keypress(stdin);
-  stdin.on('keypress', keyProcessor);
+  stdin.on("keypress", keyProcessor);
 }

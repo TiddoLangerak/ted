@@ -1,9 +1,9 @@
-import { Line, Buffer, Modifier } from './screen';
+import { Line, Buffer, Modifier } from "./screen";
 
 export type FillLineOpts = {
-  modifiers: Set<Modifier>,
-  filler: string,
-  fillerModifiers: Set<Modifier>
+  modifiers: Set<Modifier>;
+  filler: string;
+  fillerModifiers: Set<Modifier>;
 };
 /**
  * Fills a line with some text with a constant modifier. It'll padd the rest of the line
@@ -11,11 +11,15 @@ export type FillLineOpts = {
  *
  * If the text is longer than the line then the text will be cut off
  */
-export function fillLine(line: Line, text: string, {
+export function fillLine(
+  line: Line,
+  text: string,
+  {
     modifiers = new Set(),
-    filler = ' ',
-    fillerModifiers = new Set(),
-  }: Partial<FillLineOpts> = {}) {
+    filler = " ",
+    fillerModifiers = new Set()
+  }: Partial<FillLineOpts> = {}
+) {
   const numChars = Math.min(line.length, text.length);
   let i = 0;
   for (; i < numChars; i += 1) {
@@ -32,17 +36,26 @@ export function fillLine(line: Line, text: string, {
 /**
  * Creates a fixed-length text segment.
  */
-export function fixedLength(text: string, length: number, opts: Partial<FillLineOpts>) {
-  const line : Line = Array.from(new Array(length), () => ({ ch: ' ', modifiers: new Set() }));
+export function fixedLength(
+  text: string,
+  length: number,
+  opts: Partial<FillLineOpts>
+) {
+  const line: Line = Array.from(new Array(length), () => ({
+    ch: " ",
+    modifiers: new Set()
+  }));
   return fillLine(line, text, opts);
 }
 
 /**
  * Creates a styled segment
  */
-export function createSegment(text: string, modifiers: Set<Modifier> = new Set()) {
-  return text.split('')
-    .map(ch => ({ ch, modifiers }));
+export function createSegment(
+  text: string,
+  modifiers: Set<Modifier> = new Set()
+) {
+  return text.split("").map(ch => ({ ch, modifiers }));
 }
 
 /**
@@ -57,7 +70,7 @@ export function writeIntoBuffer(src: Buffer, target: Buffer) {
     .slice(0, target.length)
     .forEach((line, lineIdx) => {
       line
-      // Again, prevent overflowing
+        // Again, prevent overflowing
         .slice(0, target[lineIdx].length)
         .forEach((cell, colIdx) => {
           target[lineIdx][colIdx] = cell;

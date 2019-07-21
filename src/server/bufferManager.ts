@@ -1,4 +1,4 @@
-import { createFileBuffer } from './buffer';
+import { createFileBuffer } from "./buffer";
 
 const cache = new Map();
 // eslint-disable-next-line import/prefer-default-export

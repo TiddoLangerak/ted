@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
-import { Transform, TransformCallback } from 'stream';
-import { ReadStream, WriteStream } from 'tty';
+import { Transform, TransformCallback } from "stream";
+import { ReadStream, WriteStream } from "tty";
 
 class StdIo extends Transform {
   // eslint-disable-next-line class-methods-use-this
@@ -70,15 +70,14 @@ let _ttyOut = stdout;
 // We need to fallback to stderr if stdout is not a tty
 if (!process.stdout.isTTY) {
   if (!process.stderr.isTTY) {
-    throw new Error('Output is not a terminal');
+    throw new Error("Output is not a terminal");
   } else {
     _ttyOut = stderr;
   }
 }
 
 if (!process.stdin.isTTY) {
-  throw new Error('Stdin is not a tty');
+  throw new Error("Stdin is not a tty");
 }
 
 export const ttyOut = _ttyOut;
-

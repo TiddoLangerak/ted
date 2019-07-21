@@ -3,11 +3,8 @@
 // Definitions by: Roger Chen <https://github.com/rcchen>
 // Altered by: Tiddo Langerak
 
-
-
 declare module "keypress" {
-  import { Readable } from 'stream';
+  import { Readable } from "stream";
   function keypress(stdin: Readable): void;
   export = keypress;
 }
-

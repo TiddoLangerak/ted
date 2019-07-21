@@ -1,6 +1,6 @@
-import subScreen from '../subScreen';
-import { draw } from '../screen';
-import { ctrl, alt } from '../keyboardProcessor';
+import subScreen from "../subScreen";
+import { draw } from "../screen";
+import { ctrl, alt } from "../keyboardProcessor";
 import { State } from "../state";
 
 export default ({ contentManager }: State) => {
@@ -9,11 +9,13 @@ export default ({ contentManager }: State) => {
       cwd: process.cwd(),
       // We allow stderr to be used to draw on, and we assume stdout will be used to place
       // the result in
-      stdio: [process.stdin, 'pipe', process.stderr],
+      stdio: [process.stdin, "pipe", process.stderr]
     });
-    let file = '';
-    child.stdout!.on('data', (data) => { file += data; });
-    child.on('close', () => {
+    let file = "";
+    child.stdout!.on("data", data => {
+      file += data;
+    });
+    child.on("close", () => {
       if (file.trim()) {
         contentManager.changeFile(file);
       }
@@ -21,7 +23,7 @@ export default ({ contentManager }: State) => {
     });
   }
   return {
-    [ctrl('p')]: () => searchWith('fzf'),
-    [alt('p')]: () => searchWith('rangerFileChoser'),
+    [ctrl("p")]: () => searchWith("fzf"),
+    [alt("p")]: () => searchWith("rangerFileChoser")
   };
 };

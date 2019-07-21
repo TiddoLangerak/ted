@@ -1,30 +1,36 @@
-import uuid from 'uuid';
-import path from 'path';
-import net from 'net';
-import { sendMessage } from '../protocol';
-import { draw } from './screen';
-import { Window } from './window';
-import { Diff } from '../diff';
-import { DiffMessage, MessageType } from '../protocol';
+import uuid from "uuid";
+import path from "path";
+import net from "net";
+import { sendMessage, DiffMessage, MessageType  } from "../protocol";
+import { draw } from "./screen";
+import { Window } from "./window";
+import { Diff } from "../diff";
 
 export type ContentManager = {
-  changeFile(file: string) : void,
-  processClientDiff(diff: Diff) : void,
-  processServerDiff(msg: DiffMessage) : void,
-  saveBuffer(force?: boolean) : void,
-  undo() : void,
-  redo() : void
+  changeFile(file: string): void;
+  processClientDiff(diff: Diff): void;
+  processServerDiff(msg: DiffMessage): void;
+  saveBuffer(force?: boolean): void;
+  undo(): void;
+  redo(): void;
 };
 
 /**
  * Manages synchronization of content with the server
  */
-export default function contentManager(window: Window, client: net.Socket): ContentManager {
-  const changes : DiffMessage[] = [];
+export default function contentManager(
+  window: Window,
+  client: net.Socket
+): ContentManager {
+  const changes: DiffMessage[] = [];
   return {
     changeFile(relativeFile: string) {
       const file = path.resolve(process.cwd(), relativeFile.trim());
-      sendMessage(client, { type: MessageType.RPC, action: 'requestFile', arguments: { file } });
+      sendMessage(client, {
+        type: MessageType.RPC,
+        action: "requestFile",
+        arguments: { file }
+      });
     },
     /**
      * Processes a diff from the client.
@@ -37,7 +43,7 @@ export default function contentManager(window: Window, client: net.Socket): Cont
         type: MessageType.DIFF,
         file: window.file,
         diff,
-        uuid: uuid.v1(),
+        uuid: uuid.v1()
       };
       sendMessage(client, changeSet);
       changes.push(changeSet);
@@ -51,7 +57,9 @@ export default function contentManager(window: Window, client: net.Socket): Cont
         changes.shift();
       } else {
         // TODO: implement rollback & reapply
-        throw new Error('Out of sync with server. Cannot do anything but fail now');
+        throw new Error(
+          "Out of sync with server. Cannot do anything but fail now"
+        );
       }
       window.isDirty = Boolean(msg.isDirty);
       draw();
@@ -59,23 +67,23 @@ export default function contentManager(window: Window, client: net.Socket): Cont
     saveBuffer(force: boolean = false) {
       sendMessage(client, {
         type: MessageType.RPC,
-        action: 'saveFile',
-        arguments: { file: window.file, force },
+        action: "saveFile",
+        arguments: { file: window.file, force }
       });
     },
     undo() {
       sendMessage(client, {
         type: MessageType.RPC,
-        action: 'undo',
-        arguments: { file: window.file },
+        action: "undo",
+        arguments: { file: window.file }
       });
     },
     redo() {
       sendMessage(client, {
         type: MessageType.RPC,
-        action: 'redo',
-        arguments: { file: window.file },
+        action: "redo",
+        arguments: { file: window.file }
       });
-    },
+    }
   };
 }

@@ -1,6 +1,9 @@
 import { State } from "../state";
 
-export type ProcessorFactory = (state: State, exit: () => void) => () => Promise<unknown> | void
+export type ProcessorFactory = (
+  state: State,
+  exit: () => void
+) => () => Promise<unknown> | void;
 /**
  * Creates a mode that keeps active until explicitely closed.
  *

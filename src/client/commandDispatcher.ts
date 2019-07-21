@@ -1,11 +1,11 @@
-import { registerDrawable } from './screen';
-import { error } from './screenLogger';
-import { fillLine } from './screenBufferUtils';
+import { registerDrawable } from "./screen";
+import { error } from "./screenLogger";
+import { fillLine } from "./screenBufferUtils";
 
 const commands = new Map();
 
 const commandDispatcher = {
-  command: '',
+  command: "",
   doIt() {
     const action = commands.get(commandDispatcher.command);
     if (action) {
@@ -13,10 +13,10 @@ const commandDispatcher = {
     } else {
       error(`Action '${commandDispatcher.command}' not found`);
     }
-  },
+  }
 };
 
-registerDrawable('COMMAND_LINE', (buffer) => {
+registerDrawable("COMMAND_LINE", buffer => {
   fillLine(buffer[0], commandDispatcher.command);
 });
 

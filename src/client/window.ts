@@ -1,25 +1,23 @@
-import { draw, registerDrawable } from './screen';
-import { fillLine } from './screenBufferUtils';
-import { applyDiff, DiffType, extractText } from '../diff';
-import createCursor from './Cursor';
-import { Cursor } from './Cursor';
-import { Loc, Diff } from '../diff';
+import { draw, registerDrawable } from "./screen";
+import { fillLine } from "./screenBufferUtils";
+import { applyDiff, DiffType, extractText, Loc, Diff } from "../diff";
+import createCursor, { Cursor } from "./cursor";
 import { assertUnreachable } from "../assertUnreachable";
 
 export interface Window {
-  getContent() : string;
-  setContent(content: string) : void;
-  getLines() : string[];
-  getCurrentLine() : string;
-  lineLength(lineNum: number) : number;
-  getText(from: Loc, to: Loc) : string;
-  processDiff(diff: Diff) : void;
+  getContent(): string;
+  setContent(content: string): void;
+  getLines(): string[];
+  getCurrentLine(): string;
+  lineLength(lineNum: number): number;
+  getText(from: Loc, to: Loc): string;
+  processDiff(diff: Diff): void;
   file: string;
   isDirty: boolean;
   bufferOffset: number;
   tabWidth: number;
   cursorPadding: number;
-  getCursor(): Cursor
+  getCursor(): Cursor;
 }
 
 interface Point {
@@ -38,16 +36,14 @@ interface Point {
 function normalizeText(input: string, tabWidth: number) {
   let text = input;
   // 1. replace tabs
-  const visualTab = Array.from(new Array(tabWidth), () => ' ').join('');
+  const visualTab = Array.from(new Array(tabWidth), () => " ").join("");
   text = text.replace(/\t/g, visualTab);
 
   // 2. replace line endings
-  text = text.replace(/\r\n?/g, '\n');
+  text = text.replace(/\r\n?/g, "\n");
 
   return text;
 }
-
-
 
 function pointInRange(from: Point, to: Point, point: Point): boolean {
   if (point.y < from.y) {
@@ -65,10 +61,9 @@ function pointInRange(from: Point, to: Point, point: Point): boolean {
   return true;
 }
 
-
-export default function createWindow(contentArg: string = ''): Window {
+export default function createWindow(contentArg: string = ""): Window {
   let content = contentArg;
-  let lines = content.split('\n');
+  let lines = content.split("\n");
   let cursor: Cursor | undefined;
   function getCursor(): Cursor {
     if (!cursor) {
@@ -77,29 +72,29 @@ export default function createWindow(contentArg: string = ''): Window {
     return cursor;
   }
 
-  const window : Window = {
-    getContent : () => content,
-    setContent : (newContent) => {
+  const window: Window = {
+    getContent: () => content,
+    setContent: newContent => {
       content = newContent;
-      lines = content.split('\n');
+      lines = content.split("\n");
       draw();
     },
-    getLines : () => Array.of(...lines),
-    getCurrentLine : () => lines[window.getCursor().y],
-    file : '',
-    getText : (from, to) => extractText(lines, from, to),
+    getLines: () => Array.of(...lines),
+    getCurrentLine: () => lines[window.getCursor().y],
+    file: "",
+    getText: (from, to) => extractText(lines, from, to),
     getCursor,
-    lineLength : (line) => {
+    lineLength: line => {
       if (lines.length <= line) {
         return 0;
       }
       return lines[line].length;
     },
-    isDirty : false,
+    isDirty: false,
     // nr of lines that the cursor must stay from the edge
-    cursorPadding : 3,
-    bufferOffset : 0,
-    processDiff : (diff) => {
+    cursorPadding: 3,
+    bufferOffset: 0,
+    processDiff: diff => {
       const cursor = window.getCursor();
       // We can't update the cursor position directly. Doing so might move the cursor to a position
       // that does not yet exists, or update anchors incorrectly. Likewise, we can't apply the diff
@@ -110,16 +105,20 @@ export default function createWindow(contentArg: string = ''): Window {
       const newCursorPos = { x: cursor.x, y: cursor.y };
       switch (diff.type) {
         case DiffType.DELETE:
-          if (pointInRange({ x: diff.from.column, y: diff.from.line },
-            { x: diff.to.column, y: diff.to.line },
-            cursor)) {
+          if (
+            pointInRange(
+              { x: diff.from.column, y: diff.from.line },
+              { x: diff.to.column, y: diff.to.line },
+              cursor
+            )
+          ) {
             newCursorPos.x = diff.from.column;
             newCursorPos.y = diff.from.line;
           } else if (diff.to.line < cursor.y) {
-            newCursorPos.y -= (diff.to.line - diff.from.line);
+            newCursorPos.y -= diff.to.line - diff.from.line;
           } else if (diff.to.line === cursor.y && diff.to.column < cursor.x) {
             if (diff.to.line === diff.from.line) {
-              newCursorPos.x -= (diff.to.column - diff.from.column);
+              newCursorPos.x -= diff.to.column - diff.from.column;
             } else {
               newCursorPos.x -= diff.to.column;
             }
@@ -127,30 +126,32 @@ export default function createWindow(contentArg: string = ''): Window {
           break;
         case DiffType.INSERT:
           if (diff.line === cursor.y && diff.column <= cursor.x) {
-            const newLines = diff.text.split('\n');
+            const newLines = diff.text.split("\n");
             newCursorPos.y += newLines.length - 1;
             newCursorPos.x += newLines.pop()!.length;
           } else if (diff.line < cursor.y) {
-            newCursorPos.y += diff.text.split('\n').length - 1;
+            newCursorPos.y += diff.text.split("\n").length - 1;
           }
           break;
-        default :
+        default:
           assertUnreachable(diff);
       }
       applyDiff(lines, diff);
-      cursor.update((cursor) => {
+      cursor.update(cursor => {
         cursor.y = newCursorPos.y;
         cursor.x = newCursorPos.x;
       });
       draw();
     },
-    tabWidth : 2
+    tabWidth: 2
   };
 
-
-  registerDrawable('CONTENT', (buffer) => {
-    lines.slice(window.bufferOffset, window.bufferOffset + buffer.length)
-      .forEach((line, idx) => fillLine(buffer[idx], normalizeText(line, window.tabWidth)));
+  registerDrawable("CONTENT", buffer => {
+    lines
+      .slice(window.bufferOffset, window.bufferOffset + buffer.length)
+      .forEach((line, idx) =>
+        fillLine(buffer[idx], normalizeText(line, window.tabWidth))
+      );
   });
 
   return window;

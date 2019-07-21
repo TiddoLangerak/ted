@@ -1,10 +1,10 @@
-import { keys, other } from '../keyboardProcessor';
-import { DiffType, Diff } from '../../diff';
-import { isCharKey } from '../motions/utils';
-import { fromKeyMap } from '../modes';
+import { keys, other } from "../keyboardProcessor";
+import { DiffType, Diff } from "../../diff";
+import { isCharKey } from "../motions/utils";
+import { fromKeyMap } from "../modes";
 import { loopingMode } from "./loopingMode";
 
-export default loopingMode('insert', (state, exitMode) => {
+export default loopingMode("insert", (state, exitMode) => {
   const { window, contentManager } = state;
   const cursor = window.getCursor();
   return fromKeyMap({
@@ -18,25 +18,25 @@ export default loopingMode('insert', (state, exitMode) => {
       }
       const to = {
         line: cursor.y,
-        column: cursor.x,
+        column: cursor.x
       };
       let from;
       if (cursor.x > 0) {
         from = {
           line: cursor.y,
-          column: cursor.x - 1,
+          column: cursor.x - 1
         };
       } else {
         from = {
           line: cursor.y - 1,
-          column: window.lineLength(cursor.y - 1),
+          column: window.lineLength(cursor.y - 1)
         };
       }
       const diff: Diff = {
         type: DiffType.DELETE,
         from,
         to,
-        text: window.getText(from, to),
+        text: window.getText(from, to)
       };
       contentManager.processClientDiff(diff);
     },
@@ -44,17 +44,17 @@ export default loopingMode('insert', (state, exitMode) => {
       if (isCharKey(ch, key)) {
         let text = ch;
         // TODO: this better
-        if (ch === '\r') {
-          text = '\n';
+        if (ch === "\r") {
+          text = "\n";
         }
-        const diff : Diff = {
+        const diff: Diff = {
           type: DiffType.INSERT,
           line: cursor.y,
           column: cursor.x,
-          text,
+          text
         };
         contentManager.processClientDiff(diff);
       }
-    },
+    }
   });
 });

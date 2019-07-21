@@ -1,19 +1,19 @@
-import commandDispatcher from '../commandDispatcher';
-import { draw } from '../screen';
-import { keys, other } from '../keyboardProcessor';
-import { isCharKey } from '../motions/utils';
-import { fromKeyMap } from '../modes';
+import commandDispatcher from "../commandDispatcher";
+import { draw } from "../screen";
+import { keys, other } from "../keyboardProcessor";
+import { isCharKey } from "../motions/utils";
+import { fromKeyMap } from "../modes";
 import { loopingMode } from "./loopingMode";
 
-export default loopingMode('command', (state, exitMode) => {
-  commandDispatcher.command = ':';
+export default loopingMode("command", (state, exitMode) => {
+  commandDispatcher.command = ":";
   return fromKeyMap({
     [keys.ESCAPE]: exitMode,
     [keys.BACKSPACE]: () => {
       commandDispatcher.command = commandDispatcher.command.slice(0, -1);
       draw();
     },
-    '\r': () => {
+    "\r": () => {
       commandDispatcher.doIt();
       exitMode();
     },
@@ -22,6 +22,6 @@ export default loopingMode('command', (state, exitMode) => {
         commandDispatcher.command += ch;
         draw();
       }
-    },
+    }
   });
 });

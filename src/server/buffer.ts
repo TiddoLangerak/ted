@@ -1,7 +1,6 @@
-import fs from 'fs';
-import promisify from '../promisify';
-import { applyDiff, invertDiff } from '../diff';
-import { Diff } from '../diff';
+import fs from "fs";
+import promisify from "../promisify";
+import { applyDiff, invertDiff, Diff } from "../diff";
 
 /**
  * Wrapper around fs.access to make it work properly with promises
@@ -9,9 +8,12 @@ import { Diff } from '../diff';
  * It calls the callback with an error when the check fails, or with nothing
  * when it succeeds. Because fuck consistency.
  */
-async function checkAccess(filePath: string, mode = fs.constants.F_OK): Promise<boolean> {
-  return new Promise((resolve) => {
-    fs.access(filePath, mode, (err) => {
+async function checkAccess(
+  filePath: string,
+  mode = fs.constants.F_OK
+): Promise<boolean> {
+  return new Promise(resolve => {
+    fs.access(filePath, mode, err => {
       resolve(!err);
     });
   });
@@ -57,12 +59,15 @@ class Buffer {
   }
 }
 
-
 class FileBuffer extends Buffer {
   filePath: string;
   readOnly: boolean;
   originalContent: string | undefined;
-  constructor(filePath: string, content: string = '', readOnly: boolean = false) {
+  constructor(
+    filePath: string,
+    content: string = "",
+    readOnly: boolean = false
+  ) {
     super(content);
     this.filePath = filePath;
     this.readOnly = readOnly;
@@ -73,10 +78,14 @@ class FileBuffer extends Buffer {
       // It would be a shame if we overwrite external changes without notifying the user
       const readable = await checkAccess(this.filePath, fs.constants.R_OK);
       if (readable) {
-        const currentContent = await promisify(cb => fs.readFile(this.filePath, 'utf8', cb));
+        const currentContent = await promisify(cb =>
+          fs.readFile(this.filePath, "utf8", cb)
+        );
         if (currentContent !== this.originalContent) {
           // TODO: indicate this somewhere
-          throw new Error('Buffer has changed on disk. Force save to overwrite');
+          throw new Error(
+            "Buffer has changed on disk. Force save to overwrite"
+          );
         }
       }
     }
@@ -98,7 +107,7 @@ export async function createFileBuffer(filePath: string): Promise<FileBuffer> {
   }
   const [writeable, content] = await Promise.all([
     checkAccess(filePath, fs.constants.W_OK),
-    promisify(cb => fs.readFile(filePath, 'utf8', cb)) as Promise<string>,
+    promisify(cb => fs.readFile(filePath, "utf8", cb)) as Promise<string>
   ]);
   // TODO: install watchers on the file system
   return new FileBuffer(filePath, content, !writeable);

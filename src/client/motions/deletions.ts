@@ -1,9 +1,9 @@
-import { copy } from 'copy-paste';
-import { keys, next, peek } from '../keyboardProcessor';
-import { DiffType, DeleteDiff } from '../../diff';
-import search from './search';
-import movement from './movement';
-import { fromKeyMap } from '../modes';
+import { copy } from "copy-paste";
+import { keys, next, peek } from "../keyboardProcessor";
+import { DiffType, DeleteDiff } from "../../diff";
+import search from "./search";
+import movement from "./movement";
+import { fromKeyMap } from "../modes";
 import { State } from "../state";
 
 async function deleteMovement(state: State) {
@@ -14,12 +14,12 @@ async function deleteMovement(state: State) {
   const cursor = window.getCursor();
   const deleteMotionProcessor = fromKeyMap({
     ...search(state),
-    ...movement(state),
+    ...movement(state)
   });
 
   await deleteMotionProcessor();
   // Some movements behave a bit different when used as deletion, so we fixup those here
-  if ('eEft'.indexOf(firstChar) !== -1) {
+  if ("eEft".indexOf(firstChar) !== -1) {
     cursor.moveRight();
   }
 }
@@ -29,24 +29,27 @@ export async function deleteUnderMovement(state: State) {
   const cursor = window.getCursor();
   let from = {
     line: cursor.y,
-    column: cursor.x,
+    column: cursor.x
   };
   await deleteMovement(state);
   let to = {
     line: cursor.y,
-    column: cursor.x,
+    column: cursor.x
   };
   // If this is a backwards deletion then we need to swap to and from.
-  if (to.line < from.line || (to.line === from.line && to.column < from.column)) {
+  if (
+    to.line < from.line ||
+    (to.line === from.line && to.column < from.column)
+  ) {
     const temp = to;
     to = from;
     from = temp;
   }
-  const diff : DeleteDiff = {
+  const diff: DeleteDiff = {
     type: DiffType.DELETE,
     from,
     to,
-    text: window.getText(from, to),
+    text: window.getText(from, to)
   };
   contentManager.processClientDiff(diff);
 }
@@ -57,11 +60,11 @@ export function removeLine({ window, contentManager }: State) {
   copy(`${line}\n`);
   const from = {
     line: cursor.y,
-    column: 0,
+    column: 0
   };
   const to = {
     line: cursor.y + 1,
-    column: 0,
+    column: 0
   };
   // If this is the last line then we want to remove the trailing newline as well, so we extent
   // the range slightly
@@ -69,11 +72,11 @@ export function removeLine({ window, contentManager }: State) {
     from.line -= 1;
     from.column = window.lineLength(from.line);
   }
-  const diff : DeleteDiff = {
+  const diff: DeleteDiff = {
     type: DiffType.DELETE,
     from,
     to,
-    text: window.getText(from, to),
+    text: window.getText(from, to)
   };
   contentManager.processClientDiff(diff);
 }
@@ -81,12 +84,12 @@ export function removeLine({ window, contentManager }: State) {
 export default (state: State) => ({
   d: async () => {
     const { ch } = await peek();
-    if (ch === 'd') {
-        // We now do want to pop the character, so we can call next.
+    if (ch === "d") {
+      // We now do want to pop the character, so we can call next.
       next();
       removeLine(state);
     } else if (ch !== keys.ESCAPE) {
       await deleteUnderMovement(state);
     }
-  },
+  }
 });

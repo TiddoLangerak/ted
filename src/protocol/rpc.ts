@@ -1,41 +1,38 @@
 export interface RequestFileArg {
   file: string;
-};
+}
 
 export interface RequestFile {
-  action: 'requestFile';
-  arguments: RequestFileArg
+  action: "requestFile";
+  arguments: RequestFileArg;
 }
 
 export interface SaveFileArg {
-  file: string,
-  force?: boolean
-};
+  file: string;
+  force?: boolean;
+}
 
 export interface SaveFile {
-  action: 'saveFile';
+  action: "saveFile";
   arguments: SaveFileArg;
 }
 
 export interface UndoArg {
-  file: string
-};
+  file: string;
+}
 
 export interface Undo {
-  action: 'undo';
+  action: "undo";
   arguments: UndoArg;
 }
 
 export interface RedoArg {
-  file: string
-};
+  file: string;
+}
 
 export interface Redo {
-  action: 'redo';
+  action: "redo";
   arguments: RedoArg;
 }
 
-export type RpcAction = RequestFile
-  | SaveFile
-  | Undo
-  | Redo;
+export type RpcAction = RequestFile | SaveFile | Undo | Redo;
