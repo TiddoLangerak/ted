@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "watch": "npm run build -- --watch",
-    "prettier": "prettier --write src/**/*.ts"
+    "prettier": "prettier --write src/**/*.ts",
+    "client": "node -r source-map-support/register out/client/index.js"
   },
   "author": "Tiddo Langerak <tiddolangerak@gmail.com> (https://github.com/TiddoLangerak/)",
   "license": "MIT",
@@ -20,6 +21,7 @@
     "flow-typed": "^2.1.2",
     "husky": "^3.0.1",
     "lint-staged": "^9.2.0",
+    "source-map-support": "^0.5.12",
     "typescript": "^3.5.3"
   },
   "dependencies": {
