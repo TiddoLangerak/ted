@@ -1,6 +1,5 @@
 import styles from "ansi-styles";
 import { Window } from "./window";
-import log from './fileLogger';
 import { Screen } from "./screen";
 
 export const anchors = {
@@ -23,14 +22,11 @@ export class Cursor implements BufferCoordinates {
     this.screen = screen;
   }
   update(updateFunc: (cursor: Cursor) => unknown) {
-    log(`Old y: ${this.y}`);
     updateFunc(this);
     // Note: both for y and x the min call must be done before the max call, since
     // it is possible that a negative number comes out of the Math.min call
     // (when rows or cols = 0)
-    log(`New y: ${this.y}. Window lines: ${this.window.getLines().length}`);
     this.y = Math.min(this.window.getLines().length - 1, this.y);
-    log(`Adjusted y: ${this.y}`);
     this.y = Math.max(0, this.y);
 
     // We can't do math with anchor points, so we need to check if we actually have a number
@@ -52,9 +48,8 @@ export class Cursor implements BufferCoordinates {
       this.y - this.window.bufferOffset >=
       windowHeight - this.window.cursorPadding
     ) {
-      log("Scrolling");
       this.window.bufferOffset =
-        this.y - (windowHeight + this.window.cursorPadding + 1);
+        this.y - (windowHeight - this.window.cursorPadding - 1);
     } else if (this.y - this.window.bufferOffset - this.window.cursorPadding < 0) {
       this.window.bufferOffset = Math.max(0, this.y - this.window.cursorPadding);
     }
@@ -108,7 +103,6 @@ export default function createCursor(window: Window, screen: Screen): Cursor {
 
   screen.registerDrawable("CURSOR", buffer => {
     const cursorPos = window.getScreenCoordinates(cursor);
-    log(`Cursor coordinates: ${cursor.y},${cursor.x}. Screen coordinates: ${cursorPos.row},${cursorPos.column}. Buffer offset: ${window.bufferOffset}`);
     // We need to copy the modifiers since it may be shared with other characters
     const mods = new Set(buffer[cursorPos.row][cursorPos.column].modifiers);
     mods.add(styles.bgWhite);
