@@ -7,6 +7,7 @@ export type State = {
   window: Window;
   contentManager: ContentManager;
   setCurrentMode(mode: string): void;
+  getCurrentMode(): string;
   screen: Screen;
   stdio: Stdio;
 };

@@ -138,7 +138,7 @@ import { getStdio } from "./stdio";
   statusLine({ screen, getCurrentMode, window: mainWindow });
   keyboardProcessor(stdio.stdin);
   registerCommandDispatcherAsDrawable(screen);
-  initialMode({ window: mainWindow, contentManager, setCurrentMode, screen, stdio });
+  initialMode({ window: mainWindow, contentManager, setCurrentMode, getCurrentMode, screen, stdio });
 
   screen.draw();
 })().then(

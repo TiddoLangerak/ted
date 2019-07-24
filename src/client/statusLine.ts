@@ -25,7 +25,7 @@ export default function createStatusLine({
     modifiers: statusLineModifiers,
     fillerModifiers: statusLineModifiers
   };
-  screen. registerDrawable("STATUS_LINE", buffer => {
+  screen.registerDrawable("STATUS_LINE", buffer => {
     let leftSegment = [
       ...createSegment(getCurrentMode().toUpperCase(), modeMods),
       ...createSegment(" | ", statusLineMods)

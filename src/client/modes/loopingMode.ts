@@ -17,6 +17,7 @@ export type ProcessorFactory = (
  */
 export function loopingMode(name: string, factoryFunc: ProcessorFactory) {
   return async (state: State) => {
+    const previousMode = state.getCurrentMode();
     if (name) {
       state.setCurrentMode(name);
     }
@@ -29,5 +30,6 @@ export function loopingMode(name: string, factoryFunc: ProcessorFactory) {
       // eslint-disable-next-line no-await-in-loop
       await looper();
     }
+    state.setCurrentMode(previousMode);
   };
 }
