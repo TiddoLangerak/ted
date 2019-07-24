@@ -1,0 +1,14 @@
+## Windows and buffers:
+
+- Currently, the distinction between buffers and windows is poor
+- Window has some "text features", like "getLines", "lineLength", etc.
+- Window is also missing some "window features", like dimensions
+- Buffer is completely decoupled, and only cares about syncing content to storage
+
+
+Some suggestions:
+- Window should delegate text-operations to another class. This _could_ be Buffer, but maybe we need some other indirection. E.g. we can have a "TextBuffer" vs a "LineBuffer" (or "LineView", "LineManager", "WindowContent". Many things possible)
+- Window should definitely get all the window features
+
+## Escape -> keypress
+escape follow by a keypress is broken, for whatever reason. It gives a sequence of 2 characters, instead of 2 separate key presses. We might need to move away from the hacky "keypress" lib to fix this.
