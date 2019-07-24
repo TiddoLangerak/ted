@@ -64,6 +64,9 @@ export class Screen {
   getHeight() {
     return this.ttyOut.getRows();
   }
+  getWidth() {
+    return this.ttyOut.getColumns();
+  }
   startAlternateBuffer() {
     this.ttyOut.write("\x1b[?1049h");
     this.ttyOut.write(ansiEscapes.cursorHide);

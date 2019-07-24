@@ -52,7 +52,7 @@ export default ({ window }: State) => {
     l: () => cursor.moveRight(),
     j: () => cursor.moveDown(),
     k: () => cursor.moveUp(),
-    $: cursor.moveToEOL,
+    $: () => cursor.moveToEOL(),
     G: () =>
       cursor.update(cursor => {
         cursor.y = window.getLines().length - 1;

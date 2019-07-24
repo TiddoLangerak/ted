@@ -5,6 +5,11 @@ import createCursor, { Cursor, BufferCoordinates } from "./cursor";
 import { assertUnreachable } from "../assertUnreachable";
 import { BufferCoordinatesOutOfRangeException } from "./exceptions/BufferCoordinatesOutOfRangeException";
 
+export interface BufferOffset {
+  x: number;
+  y: number;
+}
+
 export class Window {
   private content: string;
   private lines: string[];
@@ -14,7 +19,7 @@ export class Window {
   isDirty = false;
   cursorPadding= 3;
   // nr of lines that the cursor must stay from the edge
-  bufferOffset= 0;
+  bufferOffset : BufferOffset = { x: 0, y : 0};
   tabWidth= 2;
   constructor(screen: Screen, content: string) {
     this.screen = screen;
@@ -26,6 +31,9 @@ export class Window {
     // -2 is for command line and for status line
     // TODO: do this differently
     return this.screen.getHeight() - 2;
+  }
+  getWidth() {
+    return this.screen.getWidth();
   }
   getContent(){
     return this.content;
@@ -120,8 +128,8 @@ export class Window {
       throw new BufferCoordinatesOutOfRangeException(bufferCoordinates, this);
     }
     const screenCoordinates = {
-      column: bufferCoordinates.x,
-      row: bufferCoordinates.y - this.bufferOffset
+      column: bufferCoordinates.x - this.bufferOffset.x,
+      row: bufferCoordinates.y - this.bufferOffset.y
     };
     const leadingTabs =
       this.getLines()
@@ -181,9 +189,9 @@ export default function createWindow(screen: Screen, contentArg: string): Window
 
   screen.registerDrawable("CONTENT", buffer => {
     window.getLines()
-      .slice(window.bufferOffset, window.bufferOffset + buffer.length)
+      .slice(window.bufferOffset.y, window.bufferOffset.y + buffer.length)
       .forEach((line, idx) =>
-        fillLine(buffer[idx], normalizeText(line, window.tabWidth))
+        fillLine(buffer[idx], normalizeText(line.slice(window.bufferOffset.x), window.tabWidth))
       );
   });
 

@@ -41,18 +41,33 @@ export class Cursor implements BufferCoordinates {
       this.x = this.window.lineLength(this.y);
     }
 
-    // TODO: get this from somewhere
-    const windowHeight = this.window.getHeight(); //stdout.getRows() - 2;
+    const screenCoordinates = this.window.getScreenCoordinates({
+      x: this.x,
+      y: this.y
+    });
+    const windowHeight = this.window.getHeight();
+    const windowWidth = this.window.getWidth();
+
     // Scroll
     if (
-      this.y - this.window.bufferOffset >=
-      windowHeight - this.window.cursorPadding
+      screenCoordinates.row >= windowHeight - this.window.cursorPadding
     ) {
-      this.window.bufferOffset =
+      this.window.bufferOffset.y =
         this.y - (windowHeight - this.window.cursorPadding - 1);
-    } else if (this.y - this.window.bufferOffset - this.window.cursorPadding < 0) {
-      this.window.bufferOffset = Math.max(0, this.y - this.window.cursorPadding);
+    } else if (screenCoordinates.row <= this.window.cursorPadding) {
+      this.window.bufferOffset.y = Math.max(0, this.y - this.window.cursorPadding);
     }
+
+    // Scroll
+    if (
+      screenCoordinates.column >= windowWidth - this.window.cursorPadding
+    ) {
+      this.window.bufferOffset.x =
+        this.x - (windowWidth - this.window.cursorPadding - 1);
+    } else if (screenCoordinates.column <= this.window.cursorPadding) {
+      this.window.bufferOffset.x = Math.max(0, this.x - this.window.cursorPadding);
+    }
+
     this.screen.draw();
   }
   isAt(point: number) {

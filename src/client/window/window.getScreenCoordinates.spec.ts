@@ -50,7 +50,10 @@ describe("Window", () => {
           ).toThrow(BufferCoordinatesOutOfRangeException);
         });
 
-        describe("With bufferOffset = 0", () => {
+        describe("With bufferOffset.y = 0", () => {
+          beforeEach(() => {
+            window.bufferOffset.y = 0;
+          });
           it("returns coordinate matching the buffer coordinates", () => {
             expect(
               window.getScreenCoordinates({ x: 0, y : 0})
@@ -75,9 +78,9 @@ describe("Window", () => {
           });
         });
 
-        describe("With bufferOffset = 1", () => {
+        describe("With bufferOffset.y = 1", () => {
           beforeEach(() => {
-            window.bufferOffset = 1;
+            window.bufferOffset.y = 1;
           });
           it("returns adjusted coordinates", () => {
             expect(
