@@ -7,7 +7,9 @@
     "build": "tsc",
     "watch": "npm run build -- --watch",
     "prettier": "prettier --write src/**/*.ts",
-    "client": "node -r source-map-support/register out/client/index.js"
+    "client": "node -r source-map-support/register out/client/index.js",
+    "test": "jest",
+    "test:dev" : "jest --watch"
   },
   "author": "Tiddo Langerak <tiddolangerak@gmail.com> (https://github.com/TiddoLangerak/)",
   "license": "MIT",
@@ -15,13 +17,16 @@
     "@types/ansi-escapes": "^4.0.0",
     "@types/ansi-styles": "^3.2.1",
     "@types/copy-paste": "^1.1.30",
+    "@types/jest": "^24.0.15",
     "@types/mkdirp": "^0.5.2",
     "@types/node": "^12.6.8",
     "@types/uuid": "^3.4.5",
     "flow-typed": "^2.1.2",
     "husky": "^3.0.1",
+    "jest": "^24.8.0",
     "lint-staged": "^9.2.0",
     "source-map-support": "^0.5.12",
+    "ts-jest": "^24.0.2",
     "typescript": "^3.5.3"
   },
   "dependencies": {

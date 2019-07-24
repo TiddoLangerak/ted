@@ -1,8 +1,9 @@
 import { draw, registerDrawable } from "./screen";
 import { fillLine } from "./screenBufferUtils";
 import { applyDiff, DiffType, extractText, Loc, Diff } from "../diff";
-import createCursor, { Cursor } from "./cursor";
+import createCursor, { Cursor, BufferCoordinates } from "./cursor";
 import { assertUnreachable } from "../assertUnreachable";
+import { BufferCoordinatesOutOfRangeException } from "./exceptions/BufferCoordinatesOutOfRangeException";
 
 export class Window {
   private content: string;
@@ -94,6 +95,37 @@ export class Window {
     });
     draw();
   };
+  isInRange(coordinates: BufferCoordinates) {
+    return coordinates.y >= 0
+      && coordinates.y < this.getLines().length
+      && coordinates.x >= 0
+      && coordinates.x < this.lineLength(coordinates.y);
+  }
+  /**
+   * Gets the screen coordinates for a given buffer coordinate
+   * The buffer coordinate should specify an {x, y} pair, corresponding to the xth character
+   * on the yth line. The screen coordinate will be a  {column, row} pair.
+   */
+  getScreenCoordinates(
+    bufferCoordinates: BufferCoordinates
+  ) {
+    if (!this.isInRange(bufferCoordinates)) {
+      throw new BufferCoordinatesOutOfRangeException(bufferCoordinates, this);
+    }
+    const screenCoordinates = {
+      column: bufferCoordinates.x,
+      row: bufferCoordinates.y - this.bufferOffset
+    };
+    const leadingTabs =
+      this.getLines()
+        [bufferCoordinates.y].substr(0, bufferCoordinates.x)
+        .split("\t").length - 1;
+
+    const columnOffset = leadingTabs * (this.tabWidth - 1);
+    screenCoordinates.column += columnOffset;
+    return screenCoordinates;
+  }
+
 }
 
 interface Point {
