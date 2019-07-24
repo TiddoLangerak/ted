@@ -4,6 +4,8 @@ import { applyDiff, DiffType, extractText, Loc, Diff } from "../diff";
 import createCursor, { Cursor, BufferCoordinates } from "./cursor";
 import { assertUnreachable } from "../assertUnreachable";
 import { BufferCoordinatesOutOfRangeException } from "./exceptions/BufferCoordinatesOutOfRangeException";
+import log from './fileLogger';
+
 
 export interface BufferOffset {
   x: number;
@@ -15,6 +17,8 @@ export class Window {
   private lines: string[];
   private cursor: Cursor;
   private screen: Screen;
+  private width: number;
+  private height: number;
   file = "";
   isDirty = false;
   cursorPadding= 3;
@@ -26,14 +30,20 @@ export class Window {
     this.content = content;
     this.lines = content.split("\n");
     this.cursor = createCursor(this, screen);
+    this.width = 0;
+    this.height = 0;
+  }
+  setHeight(height: number) {
+    this.height = height;
+  }
+  setWidth(width: number) {
+    this.width = width;
   }
   getHeight() {
-    // -2 is for command line and for status line
-    // TODO: do this differently
-    return this.screen.getHeight() - 2;
+    return this.height;
   }
   getWidth() {
-    return this.screen.getWidth();
+    return this.width;
   }
   getContent(){
     return this.content;
@@ -188,6 +198,8 @@ export default function createWindow(screen: Screen, contentArg: string): Window
   const window: Window = new Window(screen, contentArg);
 
   screen.registerDrawable("CONTENT", buffer => {
+    window.setHeight(buffer.length);
+    window.setWidth(buffer[0].length);
     window.getLines()
       .slice(window.bufferOffset.y, window.bufferOffset.y + buffer.length)
       .forEach((line, idx) =>
