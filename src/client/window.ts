@@ -99,7 +99,7 @@ export class Window {
     return coordinates.y >= 0
       && coordinates.y < this.getLines().length
       && coordinates.x >= 0
-      && coordinates.x < this.lineLength(coordinates.y);
+      && coordinates.x <= this.lineLength(coordinates.y);
   }
   /**
    * Gets the screen coordinates for a given buffer coordinate

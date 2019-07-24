@@ -2,6 +2,7 @@ import styles from "ansi-styles";
 import { draw, registerDrawable } from "./screen";
 import { stdout } from "./stdio";
 import { Window } from "./window";
+import log from './fileLogger';
 
 export const anchors = {
   EOL: "$"

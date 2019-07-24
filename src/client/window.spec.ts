@@ -38,10 +38,10 @@ describe("Window", () => {
             () => window.getScreenCoordinates({ x: -1, y: 0 })
           ).toThrow(BufferCoordinatesOutOfRangeException);
         });
-        it("throws when the x coodinate is equal to the line length", () => {
+        it("does not throw when the x coodinate is equal to the line length", () => {
           expect(
             () => window.getScreenCoordinates({ x: firstLine.length, y: 0 })
-          ).toThrow(BufferCoordinatesOutOfRangeException);
+          ).not.toThrow(BufferCoordinatesOutOfRangeException);
         });
         it("throws when the x coodinate is larger than the line length", () => {
           expect(
