@@ -1,13 +1,44 @@
 import util from "util";
 import styles from "ansi-styles";
-import { registerDrawable, draw } from "./screen";
 import { fillLine } from "./screenBufferUtils";
 import { LogLevel } from "../server/log";
 import { EscapeCode } from "ansi-styles/escape-code";
+import { Screen } from "./screen";
 
 interface Log {
   msg: string;
   type: LogLevel;
+}
+let screen: Screen;
+export function initScreenLogger(newScreen: Screen) {
+  screen = newScreen;
+  screen.registerDrawable("LOG", buffer => {
+    if (logs.length) {
+      // -1 because of the header
+      const virtualStart = buffer.length - logs.length - 1;
+      const start = Math.max(0, virtualStart);
+      fillLine(buffer[start], "---LOG---", {
+        modifiers: defaultModifiers,
+        fillerModifiers: defaultModifiers
+      });
+      logs
+        .filter(
+          (msg, idx) =>
+            // We need to filter out those logs that are drawn above the visible viewport.
+            virtualStart + 1 + idx > 0
+        )
+        .forEach((msg, idx) => {
+          fillLine(buffer[start + 1 + idx], msg.msg, {
+            modifiers: modifiers[msg.type],
+            fillerModifiers: defaultModifiers
+          });
+        });
+    }
+  });
+}
+
+function draw() {
+  return screen.draw();
 }
 
 const logs: Log[] = [];
@@ -45,26 +76,3 @@ const modifiers: Modifiers = {
 };
 const defaultModifiers = new Set([logBg]);
 
-registerDrawable("LOG", buffer => {
-  if (logs.length) {
-    // -1 because of the header
-    const virtualStart = buffer.length - logs.length - 1;
-    const start = Math.max(0, virtualStart);
-    fillLine(buffer[start], "---LOG---", {
-      modifiers: defaultModifiers,
-      fillerModifiers: defaultModifiers
-    });
-    logs
-      .filter(
-        (msg, idx) =>
-          // We need to filter out those logs that are drawn above the visible viewport.
-          virtualStart + 1 + idx > 0
-      )
-      .forEach((msg, idx) => {
-        fillLine(buffer[start + 1 + idx], msg.msg, {
-          modifiers: modifiers[msg.type],
-          fillerModifiers: defaultModifiers
-        });
-      });
-  }
-});

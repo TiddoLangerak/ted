@@ -6,17 +6,22 @@ import mkdirp from "mkdirp";
 import { SOCKET_PATH, SERVER_LOG_PATH } from "../paths";
 import { socketIsActive } from "../socketManager";
 import { messageParser, sendMessage, MessageType } from "../protocol";
-import { draw } from "./screen";
-import { error, log } from "./screenLogger";
+import { error, log, initScreenLogger } from "./screenLogger";
 import keyboardProcessor from "./keyboardProcessor";
 import window, { Window } from "./window";
 import contentManagerFactory, { ContentManager } from "./contentManager";
 import { initialMode } from "./modes";
 import statusLine from "./statusLine";
-import { registerCommand } from "./commandDispatcher";
+import { registerCommand, registerAsDrawable as registerCommandDispatcherAsDrawable } from "./commandDispatcher";
 import promisify from "../promisify";
+import { Screen } from "./screen";
+import { getStdio } from "./stdio";
 
 (async function run() {
+  const stdio = getStdio();
+  const screen = new Screen(stdio.ttyOut);
+  initScreenLogger(screen);
+
   // If the socket isn't active yet then that means there isn't any server yet. In that case we'll
   // start one.
   if (!(await socketIsActive())) {
@@ -61,6 +66,7 @@ import promisify from "../promisify";
       }, 50);
     });
   }
+
   log(`Socket path: ${SOCKET_PATH}`);
   const client = net.connect({ path: SOCKET_PATH }, () => {
     log("Connected to server");
@@ -74,9 +80,9 @@ import promisify from "../promisify";
     }
   });
 
-  const mainWindow = window("");
+  const mainWindow = window(screen, "");
 
-  const contentManager = contentManagerFactory(mainWindow, client);
+  const contentManager = contentManagerFactory(mainWindow, screen, client);
   registerCommand(":w", contentManager.saveBuffer);
   registerCommand(":w!", () => contentManager.saveBuffer(true));
   registerCommand(":q", process.exit);
@@ -91,7 +97,7 @@ import promisify from "../promisify";
           mainWindow.file = message.buffer.filePath;
           mainWindow.isDirty = message.buffer.isDirty;
           mainWindow.getCursor().moveTo(0, 0);
-          draw();
+          screen.draw();
           break;
         case MessageType.DIFF:
           contentManager.processServerDiff(message);
@@ -101,14 +107,14 @@ import promisify from "../promisify";
           delete event.type;
           if (event.event === "saved" && event.file === mainWindow.file) {
             mainWindow.isDirty = false;
-            draw();
+            screen.draw();
           }
           log(JSON.stringify(event));
           break;
         }
         case MessageType.ERROR:
           error(message.message);
-          draw();
+          screen.draw();
           break;
         default:
           error(`Unkown message type: ${message.type}`);
@@ -127,13 +133,14 @@ import promisify from "../promisify";
   }
   function setCurrentMode(val: string) {
     currentMode = val;
-    draw();
+    screen.draw();
   }
-  statusLine({ getCurrentMode, window: mainWindow });
-  keyboardProcessor();
-  initialMode({ window: mainWindow, contentManager, setCurrentMode });
+  statusLine({ screen, getCurrentMode, window: mainWindow });
+  keyboardProcessor(stdio.stdin);
+  registerCommandDispatcherAsDrawable(screen);
+  initialMode({ window: mainWindow, contentManager, setCurrentMode, screen, stdio });
 
-  draw();
+  screen.draw();
 })().then(
   () => {},
   err => {

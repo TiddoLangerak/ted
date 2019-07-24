@@ -1,19 +1,21 @@
 import styles from "ansi-styles";
-import { registerDrawable } from "./screen";
 import {
   createSegment,
   fixedLength,
   writeIntoBuffer
 } from "./screenBufferUtils";
 import { Window } from "./window";
+import { Screen } from "./screen";
 
 type StatusLineArgs = {
   window: Window;
   getCurrentMode(): string;
+  screen: Screen;
 };
 export default function createStatusLine({
   getCurrentMode,
-  window
+  window,
+  screen
 }: StatusLineArgs) {
   const statusLineBg = styles.bgBlue;
   const statusLineMods = new Set([statusLineBg]);
@@ -23,7 +25,7 @@ export default function createStatusLine({
     modifiers: statusLineModifiers,
     fillerModifiers: statusLineModifiers
   };
-  registerDrawable("STATUS_LINE", buffer => {
+  screen. registerDrawable("STATUS_LINE", buffer => {
     let leftSegment = [
       ...createSegment(getCurrentMode().toUpperCase(), modeMods),
       ...createSegment(" | ", statusLineMods)

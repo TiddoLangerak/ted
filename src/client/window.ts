@@ -1,4 +1,4 @@
-import { draw, registerDrawable } from "./screen";
+import { Screen } from "./screen";
 import { fillLine } from "./screenBufferUtils";
 import { applyDiff, DiffType, extractText, Loc, Diff } from "../diff";
 import createCursor, { Cursor, BufferCoordinates } from "./cursor";
@@ -9,16 +9,23 @@ export class Window {
   private content: string;
   private lines: string[];
   private cursor: Cursor;
+  private screen: Screen;
   file = "";
   isDirty = false;
   cursorPadding= 3;
   // nr of lines that the cursor must stay from the edge
   bufferOffset= 0;
   tabWidth= 2;
-  constructor(content: string) {
+  constructor(screen: Screen, content: string) {
+    this.screen = screen;
     this.content = content;
     this.lines = content.split("\n");
-    this.cursor = createCursor(this);
+    this.cursor = createCursor(this, screen);
+  }
+  getHeight() {
+    // -2 is for command line and for status line
+    // TODO: do this differently
+    return this.screen.getHeight() - 2;
   }
   getContent(){
     return this.content;
@@ -26,7 +33,7 @@ export class Window {
   setContent(newContent: string) {
     this.content = newContent;
     this.lines = this.content.split("\n");
-    draw();
+    this.screen.draw();
   }
   getLines() {
     return [...this.lines];
@@ -51,14 +58,14 @@ export class Window {
     // We can't update the cursor position directly. Doing so might move the cursor to a position
     // that does not yet exists, or update anchors incorrectly. Likewise, we can't apply the diff
     // first either. Doing so makes it hard to do certain checks in cursor updates
-    // (e.g. pointInRange will fail when the cursor is at an anchor position).
+    // (e.g. isPointInRange will fail when the cursor is at an anchor position).
     // To get around this we first determine where we want to move the cursor to after the update.
     // Then we can apply the update safely, and lastly we can update the cursor.
     const newCursorPos = { x: cursor.x, y: cursor.y };
     switch (diff.type) {
       case DiffType.DELETE:
         if (
-          pointInRange(
+          isPointInRange(
             { x: diff.from.column, y: diff.from.line },
             { x: diff.to.column, y: diff.to.line },
             cursor
@@ -93,7 +100,7 @@ export class Window {
       cursor.y = newCursorPos.y;
       cursor.x = newCursorPos.x;
     });
-    draw();
+    this.screen.draw();
   };
   isInRange(coordinates: BufferCoordinates) {
     return coordinates.y >= 0
@@ -153,7 +160,7 @@ function normalizeText(input: string, tabWidth: number) {
   return text;
 }
 
-function pointInRange(from: Point, to: Point, point: Point): boolean {
+function isPointInRange(from: Point, to: Point, point: Point): boolean {
   if (point.y < from.y) {
     return false;
   }
@@ -169,10 +176,10 @@ function pointInRange(from: Point, to: Point, point: Point): boolean {
   return true;
 }
 
-export default function createWindow(contentArg: string = ""): Window {
-  const window: Window = new Window(contentArg);
+export default function createWindow(screen: Screen, contentArg: string): Window {
+  const window: Window = new Window(screen, contentArg);
 
-  registerDrawable("CONTENT", buffer => {
+  screen.registerDrawable("CONTENT", buffer => {
     window.getLines()
       .slice(window.bufferOffset, window.bufferOffset + buffer.length)
       .forEach((line, idx) =>

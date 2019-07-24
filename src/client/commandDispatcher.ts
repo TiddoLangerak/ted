@@ -1,4 +1,4 @@
-import { registerDrawable } from "./screen";
+import { Screen } from "./screen";
 import { error } from "./screenLogger";
 import { fillLine } from "./screenBufferUtils";
 
@@ -16,9 +16,11 @@ const commandDispatcher = {
   }
 };
 
-registerDrawable("COMMAND_LINE", buffer => {
-  fillLine(buffer[0], commandDispatcher.command);
-});
+export function registerAsDrawable(screen: Screen) {
+  screen.registerDrawable("COMMAND_LINE", buffer => {
+    fillLine(buffer[0], commandDispatcher.command);
+  });
+}
 
 export function registerCommand(name: string, action: () => unknown) {
   commands.set(name, action);

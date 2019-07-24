@@ -1,5 +1,5 @@
 import keypress from "keypress";
-import { stdin } from "./stdio";
+import { StdReadable } from "./stdio";
 
 export interface Key {
   ctrl: boolean;
@@ -108,7 +108,7 @@ export const other: unique symbol = Symbol("other");
  *
  * An action may return a new set of bindings which will replace the current set of bindings
  */
-export default function start() {
+export default function start(stdin: StdReadable) {
   keypress(stdin);
   stdin.on("keypress", keyProcessor);
 }

@@ -2,14 +2,14 @@
 import { Transform, TransformCallback } from "stream";
 import { ReadStream, WriteStream } from "tty";
 
-class StdIo extends Transform {
+export class StdIoBase extends Transform {
   // eslint-disable-next-line class-methods-use-this
   _transform(chunk: unknown, enc: string, done: TransformCallback) {
     done(null, chunk);
   }
 }
 
-class StdReadable extends StdIo {
+export class StdReadable extends StdIoBase {
   _stream: ReadStream;
   _attached: boolean;
   constructor(stream: ReadStream) {
@@ -33,7 +33,7 @@ class StdReadable extends StdIo {
   }
 }
 
-class StdWritable extends StdIo {
+export class StdWritable extends StdIoBase {
   _stream: WriteStream;
   _attached: boolean;
   constructor(stream: WriteStream) {
@@ -62,22 +62,33 @@ class StdWritable extends StdIo {
   }
 }
 
-export const stdin = new StdReadable(process.stdin as ReadStream);
-export const stdout = new StdWritable(process.stdout as WriteStream);
-export const stderr = new StdWritable(process.stderr as WriteStream);
+export interface Stdio {
+  stdin: StdReadable;
+  stdout: StdWritable;
+  stderr: StdWritable;
+  ttyOut: StdWritable;
+}
 
-let _ttyOut = stdout;
-// We need to fallback to stderr if stdout is not a tty
-if (!process.stdout.isTTY) {
-  if (!process.stderr.isTTY) {
-    throw new Error("Output is not a terminal");
-  } else {
-    _ttyOut = stderr;
+export function getStdio() {
+  const stdin = new StdReadable(process.stdin as ReadStream);
+  const stdout = new StdWritable(process.stdout as WriteStream);
+  const stderr = new StdWritable(process.stderr as WriteStream);
+
+  let ttyOut = stdout;
+  // We need to fallback to stderr if stdout is not a tty
+  if (!process.stdout.isTTY) {
+    if (!process.stderr.isTTY) {
+      throw new Error("Output is not a terminal");
+    } else {
+      ttyOut = stderr;
+    }
   }
+
+  if (!process.stdin.isTTY) {
+    throw new Error("Stdin is not a tty");
+  }
+
+  return { stdin, stdout, stderr, ttyOut };
+
 }
 
-if (!process.stdin.isTTY) {
-  throw new Error("Stdin is not a tty");
-}
-
-export const ttyOut = _ttyOut;

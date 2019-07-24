@@ -1,13 +1,14 @@
-import { Window } from './window';
-import { BufferCoordinatesOutOfRangeException } from "./exceptions/BufferCoordinatesOutOfRangeException";
-jest.mock("./screen");
+import { Window } from '../window';
+import { BufferCoordinatesOutOfRangeException } from "../exceptions/BufferCoordinatesOutOfRangeException";
+import { aScreen } from "../screen/screen.test-factory";
+jest.mock("../screen");
 
 describe("Window", () => {
   describe("getScreenCoordinates", () => {
     describe("Given a Window", () => {
       let window: Window;
       beforeEach(() => {
-        window = new Window("");
+        window = new Window(aScreen(), "");
       });
 
       describe("With some content", () => {

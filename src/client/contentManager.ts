@@ -2,9 +2,9 @@ import uuid from "uuid";
 import path from "path";
 import net from "net";
 import { sendMessage, DiffMessage, MessageType  } from "../protocol";
-import { draw } from "./screen";
 import { Window } from "./window";
 import { Diff } from "../diff";
+import { Screen } from "./screen";
 
 export type ContentManager = {
   changeFile(file: string): void;
@@ -20,7 +20,8 @@ export type ContentManager = {
  */
 export default function contentManager(
   window: Window,
-  client: net.Socket
+  screen: Screen,
+  client: net.Socket,
 ): ContentManager {
   const changes: DiffMessage[] = [];
   return {
@@ -62,7 +63,7 @@ export default function contentManager(
         );
       }
       window.isDirty = Boolean(msg.isDirty);
-      draw();
+      screen.draw();
     },
     saveBuffer(force: boolean = false) {
       sendMessage(client, {
