@@ -4,20 +4,96 @@ import { applyDiff, DiffType, extractText, Loc, Diff } from "../diff";
 import createCursor, { Cursor } from "./cursor";
 import { assertUnreachable } from "../assertUnreachable";
 
-export interface Window {
-  getContent(): string;
-  setContent(content: string): void;
-  getLines(): string[];
-  getCurrentLine(): string;
-  lineLength(lineNum: number): number;
-  getText(from: Loc, to: Loc): string;
-  processDiff(diff: Diff): void;
-  file: string;
-  isDirty: boolean;
-  bufferOffset: number;
-  tabWidth: number;
-  cursorPadding: number;
-  getCursor(): Cursor;
+export class Window {
+  private content: string;
+  private lines: string[];
+  private cursor: Cursor;
+  file = "";
+  isDirty = false;
+  cursorPadding= 3;
+  // nr of lines that the cursor must stay from the edge
+  bufferOffset= 0;
+  tabWidth= 2;
+  constructor(content: string) {
+    this.content = content;
+    this.lines = content.split("\n");
+    this.cursor = createCursor(this);
+  }
+  getContent(){
+    return this.content;
+  }
+  setContent(newContent: string) {
+    this.content = newContent;
+    this.lines = this.content.split("\n");
+    draw();
+  }
+  getLines() {
+    return [...this.lines];
+  }
+  getCurrentLine() {
+    return this.lines[this.getCursor().y];
+  }
+  getText(from: Loc, to: Loc){
+    return extractText(this.lines, from, to);
+  }
+  getCursor(){
+    return this.cursor;
+  }
+  lineLength(line: number) {
+    if (this.lines.length <= line) {
+      return 0;
+    }
+    return this.lines[line].length;
+  }
+  processDiff(diff: Diff) {
+    const cursor = this.getCursor();
+    // We can't update the cursor position directly. Doing so might move the cursor to a position
+    // that does not yet exists, or update anchors incorrectly. Likewise, we can't apply the diff
+    // first either. Doing so makes it hard to do certain checks in cursor updates
+    // (e.g. pointInRange will fail when the cursor is at an anchor position).
+    // To get around this we first determine where we want to move the cursor to after the update.
+    // Then we can apply the update safely, and lastly we can update the cursor.
+    const newCursorPos = { x: cursor.x, y: cursor.y };
+    switch (diff.type) {
+      case DiffType.DELETE:
+        if (
+          pointInRange(
+            { x: diff.from.column, y: diff.from.line },
+            { x: diff.to.column, y: diff.to.line },
+            cursor
+          )
+        ) {
+          newCursorPos.x = diff.from.column;
+          newCursorPos.y = diff.from.line;
+        } else if (diff.to.line < cursor.y) {
+          newCursorPos.y -= diff.to.line - diff.from.line;
+        } else if (diff.to.line === cursor.y && diff.to.column < cursor.x) {
+          if (diff.to.line === diff.from.line) {
+            newCursorPos.x -= diff.to.column - diff.from.column;
+          } else {
+            newCursorPos.x -= diff.to.column;
+          }
+        }
+        break;
+      case DiffType.INSERT:
+        if (diff.line === cursor.y && diff.column <= cursor.x) {
+          const newLines = diff.text.split("\n");
+          newCursorPos.y += newLines.length - 1;
+          newCursorPos.x += newLines.pop()!.length;
+        } else if (diff.line < cursor.y) {
+          newCursorPos.y += diff.text.split("\n").length - 1;
+        }
+        break;
+      default:
+        assertUnreachable(diff);
+    }
+    applyDiff(this.lines, diff);
+    cursor.update(cursor => {
+      cursor.y = newCursorPos.y;
+      cursor.x = newCursorPos.x;
+    });
+    draw();
+  };
 }
 
 interface Point {
@@ -62,92 +138,10 @@ function pointInRange(from: Point, to: Point, point: Point): boolean {
 }
 
 export default function createWindow(contentArg: string = ""): Window {
-  let content = contentArg;
-  let lines = content.split("\n");
-  let cursor: Cursor | undefined;
-  function getCursor(): Cursor {
-    if (!cursor) {
-      cursor = createCursor(window);
-    }
-    return cursor;
-  }
-
-  const window: Window = {
-    getContent: () => content,
-    setContent: newContent => {
-      content = newContent;
-      lines = content.split("\n");
-      draw();
-    },
-    getLines: () => Array.of(...lines),
-    getCurrentLine: () => lines[window.getCursor().y],
-    file: "",
-    getText: (from, to) => extractText(lines, from, to),
-    getCursor,
-    lineLength: line => {
-      if (lines.length <= line) {
-        return 0;
-      }
-      return lines[line].length;
-    },
-    isDirty: false,
-    // nr of lines that the cursor must stay from the edge
-    cursorPadding: 3,
-    bufferOffset: 0,
-    processDiff: diff => {
-      const cursor = window.getCursor();
-      // We can't update the cursor position directly. Doing so might move the cursor to a position
-      // that does not yet exists, or update anchors incorrectly. Likewise, we can't apply the diff
-      // first either. Doing so makes it hard to do certain checks in cursor updates
-      // (e.g. pointInRange will fail when the cursor is at an anchor position).
-      // To get around this we first determine where we want to move the cursor to after the update.
-      // Then we can apply the update safely, and lastly we can update the cursor.
-      const newCursorPos = { x: cursor.x, y: cursor.y };
-      switch (diff.type) {
-        case DiffType.DELETE:
-          if (
-            pointInRange(
-              { x: diff.from.column, y: diff.from.line },
-              { x: diff.to.column, y: diff.to.line },
-              cursor
-            )
-          ) {
-            newCursorPos.x = diff.from.column;
-            newCursorPos.y = diff.from.line;
-          } else if (diff.to.line < cursor.y) {
-            newCursorPos.y -= diff.to.line - diff.from.line;
-          } else if (diff.to.line === cursor.y && diff.to.column < cursor.x) {
-            if (diff.to.line === diff.from.line) {
-              newCursorPos.x -= diff.to.column - diff.from.column;
-            } else {
-              newCursorPos.x -= diff.to.column;
-            }
-          }
-          break;
-        case DiffType.INSERT:
-          if (diff.line === cursor.y && diff.column <= cursor.x) {
-            const newLines = diff.text.split("\n");
-            newCursorPos.y += newLines.length - 1;
-            newCursorPos.x += newLines.pop()!.length;
-          } else if (diff.line < cursor.y) {
-            newCursorPos.y += diff.text.split("\n").length - 1;
-          }
-          break;
-        default:
-          assertUnreachable(diff);
-      }
-      applyDiff(lines, diff);
-      cursor.update(cursor => {
-        cursor.y = newCursorPos.y;
-        cursor.x = newCursorPos.x;
-      });
-      draw();
-    },
-    tabWidth: 2
-  };
+  const window: Window = new Window(contentArg);
 
   registerDrawable("CONTENT", buffer => {
-    lines
+    window.getLines()
       .slice(window.bufferOffset, window.bufferOffset + buffer.length)
       .forEach((line, idx) =>
         fillLine(buffer[idx], normalizeText(line, window.tabWidth))
