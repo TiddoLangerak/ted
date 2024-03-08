@@ -1,7 +1,7 @@
 import uuid from "uuid";
 import path from "path";
 import net from "net";
-import { sendMessage, DiffMessage, MessageType  } from "../protocol";
+import { sendMessage, DiffMessage, MessageType } from "../protocol";
 import { draw } from "./screen";
 import { Window } from "./window";
 import { Diff } from "../diff";
